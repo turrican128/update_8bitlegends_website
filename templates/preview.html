@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Preview: {{ title }} - 8bit Legends{% endblock %}
+
+{% block content %}
+<div class="preview-page">
+    <div class="preview-toolbar">
+        <a href="{{ url_for('edit_post', filename=filename) }}" class="btn btn-secondary">&larr; BACK TO EDITOR</a>
+        <div class="preview-actions">
+            <button class="btn btn-primary" onclick="publishPost('{{ filename }}', 'draft')">DEPLOY AS DRAFT</button>
+            <button class="btn btn-accent" onclick="publishPost('{{ filename }}', 'publish')">PUBLISH LIVE</button>
+        </div>
+    </div>
+
+    <article class="preview-article">
+        <header class="preview-header">
+            <h1 class="preview-title">{{ title }}</h1>
+            {% if tags %}
+            <div class="preview-tags">
+                {% for tag in tags %}
+                <span class="tag">{{ tag }}</span>
+                {% endfor %}
+            </div>
+            {% endif %}
+            {% if featured_image %}
+            <div class="preview-featured-image">
+                <img src="{{ featured_image }}" alt="{{ title }}">
+            </div>
+            {% endif %}
+        </header>
+        <div class="preview-content">
+            {{ content_html|safe }}
+        </div>
+    </article>
+</div>
+
+<!-- Publish modal -->
+<div class="modal" id="publishModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>DEPLOY TO WORDPRESS</h3>
+            <button class="modal-close" onclick="closeModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p id="publishFilename">{{ filename }}</p>
+            <div class="modal-actions">
+                <button class="btn btn-primary" id="publishDraftBtn">SAVE AS DRAFT</button>
+                <button class="btn btn-accent" id="publishLiveBtn">PUBLISH LIVE</button>
+            </div>
+        </div>
+        <div class="modal-result" id="publishResult"></div>
+    </div>
+</div>
+{% endblock %}

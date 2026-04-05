@@ -1,0 +1,178 @@
+{% extends "base.html" %}
+{% block title %}{% if is_new %}New Post{% else %}Edit: {{ title }}{% endif %} - 8bit Legends{% endblock %}
+
+{% block content %}
+<div class="editor-layout">
+    <!-- Main editor area -->
+    <div class="editor-main">
+        <div class="editor-toolbar-top">
+            <h1 class="page-title">{% if is_new %}NEW POST{% else %}EDITING{% endif %}</h1>
+            <div class="editor-actions">
+                <button class="btn btn-primary" id="saveBtn" onclick="savePost()">
+                    <span class="btn-icon">&#9998;</span> SAVE
+                </button>
+                {% if not is_new %}
+                <a href="{{ url_for('preview_post', filename=filename) }}" class="btn btn-secondary" target="_blank">
+                    PREVIEW
+                </a>
+                <button class="btn btn-accent" onclick="publishFromEditor()">
+                    DEPLOY
+                </button>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Metadata fields -->
+        <div class="meta-fields">
+            <div class="field-group field-title">
+                <label for="postTitle">TITLE</label>
+                <input type="text" id="postTitle" value="{{ title }}" placeholder="Name/Handle (Group) has left us...">
+            </div>
+            <div class="field-row">
+                <div class="field-group field-tags">
+                    <label for="postTags">TAGS</label>
+                    <input type="text" id="postTags" value="{{ tags }}" placeholder="c64, demoscene, retro...">
+                    <div class="tag-suggestions" id="tagSuggestions">
+                        {% for tag in common_tags %}
+                        <button type="button" class="tag-pill" onclick="addTag('{{ tag }}')">{{ tag }}</button>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="field-group field-image">
+                    <label for="postImage">FEATURED IMAGE</label>
+                    <input type="text" id="postImage" value="{{ featured_image }}" placeholder="Path or URL...">
+                </div>
+            </div>
+        </div>
+
+        <!-- Markdown editor -->
+        <div class="editor-container">
+            <textarea id="markdownEditor">{{ body }}</textarea>
+        </div>
+
+        <input type="hidden" id="postFilename" value="{{ filename or '' }}">
+    </div>
+
+    <!-- AI Sidebar -->
+    <div class="ai-sidebar" id="aiSidebar">
+        <div class="sidebar-toggle" onclick="toggleSidebar()">
+            <span class="toggle-icon">&#9776;</span>
+            <span class="toggle-label">AI</span>
+        </div>
+
+        <div class="sidebar-content">
+            <h2 class="sidebar-title">AI GENERATOR</h2>
+
+            <!-- Generate new content -->
+            <div class="ai-section">
+                <h3 class="ai-section-title">GENERATE POST</h3>
+                <div class="ai-field">
+                    <label>REAL NAME</label>
+                    <input type="text" id="aiName" placeholder="John Smith">
+                </div>
+                <div class="ai-field">
+                    <label>HANDLE</label>
+                    <input type="text" id="aiHandle" placeholder="Wizard">
+                </div>
+                <div class="ai-field">
+                    <label>GROUP / CREW</label>
+                    <input type="text" id="aiGroup" placeholder="Genesis Project">
+                    <div class="group-suggestions">
+                        {% for group in common_groups[:8] %}
+                        <button type="button" class="tag-pill tag-pill-sm" onclick="document.getElementById('aiGroup').value='{{ group }}'">{{ group }}</button>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="ai-field">
+                    <label>ROLE</label>
+                    <select id="aiRole">
+                        <option value="coder">Coder</option>
+                        <option value="musician">Musician</option>
+                        <option value="graphician">Graphician</option>
+                        <option value="swapper">Swapper</option>
+                        <option value="organizer">Organizer</option>
+                        <option value="cracker">Cracker</option>
+                    </select>
+                </div>
+                <div class="ai-field">
+                    <label>CONTRIBUTIONS</label>
+                    <textarea id="aiContributions" rows="2" placeholder="Known for amazing demos, SID tunes..."></textarea>
+                </div>
+                <div class="ai-field">
+                    <label>EXTRA CONTEXT</label>
+                    <textarea id="aiContext" rows="2" placeholder="Any additional info..."></textarea>
+                </div>
+                <button class="btn btn-ai" id="generateBtn" onclick="aiGenerate()">
+                    <span class="ai-spark">&#10038;</span> GENERATE WITH AI
+                </button>
+            </div>
+
+            <div class="ai-divider"></div>
+
+            <!-- Enhance selected text -->
+            <div class="ai-section">
+                <h3 class="ai-section-title">ENHANCE TEXT</h3>
+                <p class="ai-hint">Select text in the editor, then click enhance.</p>
+                <div class="ai-field">
+                    <label>INSTRUCTION</label>
+                    <select id="aiEnhanceType">
+                        <option value="Make this more detailed and heartfelt">More detailed</option>
+                        <option value="Expand with demoscene context and vocabulary">Add scene context</option>
+                        <option value="Make this more concise while keeping the emotional tone">More concise</option>
+                        <option value="Rewrite in a more personal, tribute-like tone">More personal</option>
+                    </select>
+                </div>
+                <button class="btn btn-ai-secondary" id="enhanceBtn" onclick="aiEnhance()">
+                    <span class="ai-spark">&#10038;</span> ENHANCE SELECTION
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Publish modal -->
+<div class="modal" id="publishModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>DEPLOY TO WORDPRESS</h3>
+            <button class="modal-close" onclick="closeModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="modal-actions">
+                <button class="btn btn-primary" onclick="doPublish('draft')">SAVE AS DRAFT</button>
+                <button class="btn btn-accent" onclick="doPublish('publish')">PUBLISH LIVE</button>
+            </div>
+        </div>
+        <div class="modal-result" id="publishResult"></div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Initialize EasyMDE
+    const easyMDE = new EasyMDE({
+        element: document.getElementById('markdownEditor'),
+        spellChecker: false,
+        autosave: { enabled: false },
+        placeholder: "Write your memorial post here...\n\nUse the AI panel on the right to generate content.",
+        toolbar: [
+            "bold", "italic", "heading", "|",
+            "quote", "unordered-list", "ordered-list", "|",
+            "link", "image", "|",
+            "preview", "side-by-side", "fullscreen", "|",
+            "guide"
+        ],
+        status: ["lines", "words"],
+        minHeight: "400px",
+    });
+
+    // Keyboard shortcut: Ctrl+S to save
+    document.addEventListener('keydown', function(e) {
+        if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+            e.preventDefault();
+            savePost();
+        }
+    });
+</script>
+{% endblock %}
