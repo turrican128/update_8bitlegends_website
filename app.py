@@ -560,18 +560,29 @@ def sync_from_wordpress():
     posts = client.get_all_posts()
 
     count = 0
+    skipped = 0
     for post in posts:
         date = post.get("date", "")[:10]
         slug = post.get("slug", "untitled")
-        filename = f"{date}-{slug}.md"
-        filepath = os.path.join(POSTS_DIR, filename)
+        html_filename = f"{date}-{slug}.html"
+        md_filename = f"{date}-{slug}.md"
+        html_path = os.path.join(POSTS_DIR, html_filename)
+        md_path = os.path.join(POSTS_DIR, md_filename)
 
-        md_content = client.post_to_markdown(post)
-        with open(filepath, "w", encoding="utf-8") as f:
-            f.write(md_content)
+        # Skip if already exists locally (don't overwrite local edits)
+        if os.path.exists(html_path) or os.path.exists(md_path):
+            skipped += 1
+            continue
+
+        local_content = client.post_to_local(post)
+        with open(html_path, "w", encoding="utf-8") as f:
+            f.write(local_content)
         count += 1
 
-    return jsonify({"ok": True, "message": f"Synced {count} posts from WordPress"})
+    msg = f"Synced {count} new posts from WordPress"
+    if skipped:
+        msg += f" ({skipped} already exist locally)"
+    return jsonify({"ok": True, "message": msg})
 
 
 @app.route("/delete/<filename>", methods=["POST"])

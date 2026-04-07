@@ -183,29 +183,31 @@ class WordPressClient:
         return text
 
     @staticmethod
-    def post_to_markdown(post):
-        """Convert a WP API post dict to markdown with frontmatter."""
+    def post_to_local(post):
+        """Convert a WP API post dict to HTML file with editor-compatible frontmatter."""
         title = html.unescape(post.get("title", ""))
-        date = post.get("date", "")[:10]
-        url = post.get("URL", "")
-        slug = post.get("slug", "")
+        wp_post_id = post.get("ID", "")
         tags = list(post.get("tags", {}).keys())
-        categories = list(post.get("categories", {}).keys())
         featured = post.get("featured_image", "")
 
         frontmatter = [
             "---",
-            f"title: \"{title}\"",
-            f"date: {date}",
-            f"slug: {slug}",
-            f"url: {url}",
-            f"categories: {json.dumps(categories)}",
+            f'title: "{title}"',
+            f"status: fetched",
+            f"format: html",
             f"tags: {json.dumps(tags)}",
+            f"featured_image: {featured}" if featured else "featured_image:",
+            f"real_name:",
+            f"wp_post_id: {wp_post_id}",
+            "---",
         ]
-        if featured:
-            frontmatter.append(f"featured_image: {featured}")
-        frontmatter.append("---")
 
-        content_text = WordPressClient.html_to_text(post.get("content", ""))
+        # Preserve original HTML content
+        content_html = post.get("content", "")
 
-        return "\n".join(frontmatter) + "\n\n" + content_text
+        return "\n".join(frontmatter) + "\n\n" + content_html
+
+    @staticmethod
+    def post_to_markdown(post):
+        """Legacy: convert WP post to markdown. Use post_to_local() instead."""
+        return WordPressClient.post_to_local(post)
