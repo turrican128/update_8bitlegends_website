@@ -13,7 +13,7 @@
     <!-- TinyMCE WYSIWYG editor (no-API-key CDN for local dev) -->
     <script src="https://cdn.jsdelivr.net/npm/tinymce@7/tinymce.min.js" referrerpolicy="origin"></script>
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=3">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=4">
     {% block head %}{% endblock %}
 </head>
 <body>
@@ -55,7 +55,7 @@
         <span class="footer-cursor">&#9608;</span>
     </footer>
 
-    <script src="{{ url_for('static', filename='app.js') }}?v=3"></script>
+    <script src="{{ url_for('static', filename='app.js') }}?v=4"></script>
     {% block scripts %}{% endblock %}
 </body>
 </html>

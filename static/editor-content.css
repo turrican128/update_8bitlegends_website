@@ -49,6 +49,29 @@ p {
   font-size: 0.98rem;
 }
 
+/* Respect light-background sections from WordPress (inline color on parent) */
+div[style*="color:#222"] p,
+div[style*="color:#222"] strong,
+div[style*="color:#222"] b,
+div[style*="color:#222"] h2,
+div[style*="color:#222"] h3,
+div[style*="color:#222"] a,
+div[style*="color: #222"] p,
+div[style*="color: #222"] strong,
+div[style*="color: #222"] b,
+div[style*="color: #222"] h2,
+div[style*="color: #222"] h3,
+div[style*="color: #222"] a {
+  color: inherit;
+}
+
+div[style*="color:#222"] blockquote,
+div[style*="color: #222"] blockquote {
+  color: inherit;
+  background: #fff;
+  border-left-color: #777;
+}
+
 /* Bold — white accents */
 strong, b {
   color: #ffffff;
@@ -155,6 +178,40 @@ div[style*="rgba(38,41,56"] {
   left: 0;
   width: 100%;
   height: 100%;
+}
+
+/* WordPress block styles — render WP-fetched content correctly */
+.has-background {
+  padding: 1.25em 1.5em;
+  border-radius: 10px;
+  margin-bottom: 1rem;
+}
+
+.has-pale-ocean-gradient-background {
+  background: linear-gradient(135deg, #e0f7fa 0%, #e8eaf6 50%, #f3e5f5 100%);
+  color: #222;
+}
+
+.has-pale-ocean-gradient-background a {
+  color: #1565c0;
+}
+
+.has-medium-font-size {
+  font-size: 1.1rem;
+}
+
+.wp-block-columns {
+  display: flex;
+  gap: 1.5rem;
+  margin: 1rem 0;
+}
+
+.wp-block-column {
+  flex: 1;
+}
+
+.wp-block-heading {
+  color: inherit;
 }
 
 /* Horizontal rule */
