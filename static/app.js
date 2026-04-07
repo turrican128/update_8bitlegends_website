@@ -177,6 +177,64 @@ function aiCreatePost() {
     });
 }
 
+// ── AI Restyle Post ─────────────────────────────────────────
+
+function aiRestylePost() {
+    const btn = document.getElementById('restylePostBtn');
+    if (!btn || btn.classList.contains('loading')) return;
+
+    const content = getEditorContent();
+    if (!content || content.trim().length < 50) {
+        showNotification('Post content is too short to restyle', 'error');
+        return;
+    }
+
+    // Optional supplementary sources
+    const rawInput = (document.getElementById('aiSourceUrl').value || '').trim();
+    const sources = rawInput ? rawInput.split('\n').map(s => s.trim()).filter(Boolean) : [];
+
+    btn.classList.add('loading');
+
+    const statusArea = document.getElementById('aiStatus');
+    const statusBody = document.getElementById('aiStatusBody');
+    if (statusArea) statusArea.style.display = 'block';
+    if (statusBody) statusBody.innerHTML = '<span class="ai-progress">Restyling post to match 8bit Legends dark cinematic theme...</span>';
+
+    fetch('/ai/restyle-post', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: content, sources: sources })
+    })
+    .then(r => r.json())
+    .then(data => {
+        btn.classList.remove('loading');
+        if (data.ok) {
+            if (data.content) {
+                setEditorContent(data.content);
+            }
+            if (data.title) {
+                document.getElementById('postTitle').value = data.title;
+            }
+            if (statusBody) {
+                statusBody.innerHTML = '<span class="ai-status-success">Post restyled!</span><span class="ai-status-hint"> Review the content above, then save when ready.</span>';
+            }
+            showNotification('Post restyled! Review and save.', 'success');
+        } else {
+            showNotification(data.error || 'Restyle failed', 'error');
+            if (statusBody) {
+                statusBody.innerHTML = '<span class="ai-status-error">' + (data.error || 'Restyle failed') + '</span>';
+            }
+        }
+    })
+    .catch(err => {
+        btn.classList.remove('loading');
+        showNotification('Failed: ' + err.message, 'error');
+        if (statusBody) {
+            statusBody.innerHTML = '<span class="ai-status-error">Failed: ' + err.message + '</span>';
+        }
+    });
+}
+
 // ── AI Enhance Selection ─────────────────────────────────────
 
 function aiEnhance() {

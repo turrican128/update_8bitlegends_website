@@ -352,6 +352,62 @@ Output ONLY the HTML content (the complete <section> wrapper + RIP div). No mark
     }
 
 
+def restyle_post(current_html, supplementary_sources=None):
+    """Restyle a fetched WordPress post to match the 8bit Legends dark cinematic theme.
+
+    Preserves all existing text, images, and links while restructuring into
+    the styled template sections with proper inline CSS.
+    """
+    extra_info = ""
+    if supplementary_sources:
+        all_data = []
+        for source in supplementary_sources:
+            data = detect_and_scrape(source.strip())
+            all_data.append(data)
+        extra_info = f"\n\nAdditional information from supplementary sources:\n{_format_all_sources(all_data)}"
+
+    template_html = get_template_html()
+
+    prompt = f"""Restyle this existing memorial post to match the 8bit Legends dark cinematic theme.
+
+EXISTING POST CONTENT (preserve ALL information, images, links, and text):
+
+{current_html}
+{extra_info}
+
+TARGET TEMPLATE (use these EXACT inline styles and section structure):
+{template_html}
+
+INSTRUCTIONS:
+- Restructure the content into the proper sections: header, biography, quote, milestones, works grid, closing, links, RIP
+- Apply ALL inline styles from the template exactly
+- PRESERVE every piece of text, every image URL, every link from the original
+- If the original has images, place them appropriately (header area or works cards)
+- Extract dates, handle, group info from the original to fill the header
+- Create milestones from chronological facts in the original
+- Create works cards from any demos/releases/games mentioned
+- If information for a section isn't available, omit that section rather than inventing content
+- The RIP section goes OUTSIDE the main <section> wrapper
+- Use the flower image URL: https://amigac64.wordpress.com/wp-content/uploads/2015/04/flower6.png
+
+Output ONLY the complete HTML (the <section> wrapper + RIP div). No markdown, no explanation."""
+
+    message = client.messages.create(
+        model="claude-sonnet-4-20250514",
+        max_tokens=4000,
+        system=SYSTEM_PROMPT,
+        messages=[{"role": "user", "content": prompt}]
+    )
+
+    content = message.content[0].text
+    title = _extract_title(content, [])
+
+    return {
+        "content": content,
+        "title": title if title else "",
+    }
+
+
 def _build_profile_summary(all_data):
     """Build a short summary of what was found across all sources."""
     parts = []

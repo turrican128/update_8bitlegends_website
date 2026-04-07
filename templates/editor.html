@@ -85,12 +85,22 @@
                 <span class="ai-icon">&#9679;</span> AI
             </div>
             <div class="ai-url-input">
+                {% if status == 'fetched' %}
+                <textarea id="aiSourceUrl" rows="2" placeholder="Optional: paste additional source URLs for enrichment (CSDB, Pouet, C64GFX.com...)"></textarea>
+                {% else %}
                 <textarea id="aiSourceUrl" rows="2" placeholder="Paste one or more URLs (one per line)&#10;CSDB, Pouet, C64GFX.com, Facebook, or any webpage..."></textarea>
+                {% endif %}
             </div>
             <div class="ai-action-buttons">
+                {% if status == 'fetched' %}
+                <button class="btn btn-ai" onclick="aiRestylePost()" id="restylePostBtn" title="Restyle this post to match the 8bit Legends dark cinematic theme">
+                    &#10038; RESTYLE WITH AI
+                </button>
+                {% else %}
                 <button class="btn btn-ai" onclick="aiCreatePost()" id="createPostBtn" title="Scrape profile, research, and generate a full memorial post">
                     &#10038; CREATE POST
                 </button>
+                {% endif %}
                 <button class="btn btn-ai-secondary" onclick="aiEnhance()" id="enhanceBtn" title="Select text in the editor, then click to enhance it">
                     &#9998; ENHANCE SELECTION
                 </button>
@@ -152,7 +162,7 @@
         selector: '#htmlEditor',
         plugins: 'lists link image media code fullscreen wordcount searchreplace autosave',
         toolbar: 'undo redo | blocks bold italic underline | bullist numlist | link image media | blockquote hr | searchreplace code fullscreen',
-        content_css: '{{ url_for("static", filename="editor-content.css") }}?v=4',
+        content_css: '{{ url_for("static", filename="editor-content.css") }}?v=5',
         skin: 'oxide-dark',
         content_css_cors: true,
         height: 520,

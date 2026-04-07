@@ -154,6 +154,7 @@ def new_post():
         common_tags=COMMON_TAGS,
         common_groups=COMMON_GROUPS,
         is_new=True,
+        status="draft",
     )
 
 
@@ -193,6 +194,7 @@ def edit_post(filename):
         common_tags=COMMON_TAGS,
         common_groups=COMMON_GROUPS,
         is_new=False,
+        status=meta.get("status", "draft"),
     )
 
 
@@ -382,6 +384,28 @@ def ai_create_post():
 
     try:
         result = create_post_from_sources(sources)
+        return jsonify({"ok": True, **result})
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 500
+
+
+@app.route("/ai/restyle-post", methods=["POST"])
+def ai_restyle_post():
+    """Restyle a fetched post to match the 8bit Legends dark cinematic theme."""
+    try:
+        from ai_generator import restyle_post
+    except ImportError as e:
+        return jsonify({"ok": False, "error": f"AI module not available: {e}"}), 500
+
+    data = request.get_json()
+    content = data.get("content", "")
+    sources = data.get("sources", [])
+
+    if not content:
+        return jsonify({"ok": False, "error": "No content to restyle"}), 400
+
+    try:
+        result = restyle_post(content, sources)
         return jsonify({"ok": True, **result})
     except Exception as e:
         return jsonify({"ok": False, "error": str(e)}), 500
