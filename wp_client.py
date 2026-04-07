@@ -108,6 +108,43 @@ class WordPressClient:
         )
         return post_id
 
+    def update_post(self, post_id, title, content_html, tags=None, status="publish", featured_image_id=None):
+        """Update an existing post via XML-RPC.
+
+        Args:
+            post_id: WordPress post ID to update
+            title: Post title
+            content_html: HTML content body
+            tags: List of tag strings
+            status: 'draft' or 'publish'
+            featured_image_id: Media ID for featured image (optional)
+        """
+        server = self._get_xmlrpc()
+
+        post_data = {
+            "post_status": status,
+            "post_title": title,
+            "post_content": content_html,
+            "terms_names": {
+                "category": ["memories"],
+            },
+        }
+
+        if tags:
+            post_data["terms_names"]["post_tag"] = tags
+
+        if featured_image_id:
+            post_data["post_thumbnail"] = featured_image_id
+
+        result = server.wp.editPost(
+            0,
+            self.username,
+            self.app_password,
+            int(post_id),
+            post_data,
+        )
+        return result  # True on success
+
     def upload_image(self, image_path):
         """Upload an image via XML-RPC and return the media ID."""
         server = self._get_xmlrpc()

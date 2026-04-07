@@ -3,144 +3,141 @@
 
 {% block content %}
 <div class="editor-layout">
-    <!-- Main editor area -->
-    <div class="editor-main">
-        <div class="editor-toolbar-top">
-            <h1 class="page-title">{% if is_new %}NEW POST{% else %}EDITING{% endif %}</h1>
-            <div class="editor-actions">
-                <button class="btn btn-primary" id="saveBtn" onclick="savePost()">
-                    <span class="btn-icon">&#9998;</span> SAVE
-                </button>
-                {% if not is_new %}
-                <a href="{{ url_for('preview_post', filename=filename) }}" class="btn btn-secondary" target="_blank">
-                    PREVIEW
-                </a>
-                <button class="btn btn-accent" onclick="publishFromEditor()">
-                    DEPLOY
-                </button>
-                {% endif %}
-            </div>
+    <!-- Top toolbar -->
+    <div class="editor-toolbar-top">
+        <h1 class="page-title">{% if is_new %}NEW POST{% else %}EDITING{% endif %}</h1>
+        <div class="editor-actions">
+            <button class="btn btn-primary" id="saveBtn" onclick="savePost()">
+                <span class="btn-icon">&#9998;</span> SAVE
+            </button>
+            {% if not is_new %}
+            <a href="{{ url_for('preview_post', filename=filename) }}" class="btn btn-secondary" target="_blank">
+                PREVIEW
+            </a>
+            <button class="btn btn-accent" onclick="publishFromEditor()">
+                {% if wp_post_id %}UPDATE{% else %}DEPLOY{% endif %}
+            </button>
+            {% endif %}
         </div>
-
-        <!-- Metadata fields -->
-        <div class="meta-fields">
-            <div class="field-group field-title">
-                <label for="postTitle">TITLE</label>
-                <input type="text" id="postTitle" value="{{ title }}" placeholder="Name/Handle (Group) has left us...">
-            </div>
-            <div class="field-row">
-                <div class="field-group field-tags">
-                    <label for="postTags">TAGS</label>
-                    <input type="text" id="postTags" value="{{ tags }}" placeholder="c64, demoscene, retro...">
-                    <div class="tag-suggestions" id="tagSuggestions">
-                        {% for tag in common_tags %}
-                        <button type="button" class="tag-pill" onclick="addTag('{{ tag }}')">{{ tag }}</button>
-                        {% endfor %}
-                    </div>
-                </div>
-                <div class="field-group field-image">
-                    <label for="postImage">FEATURED IMAGE</label>
-                    <input type="text" id="postImage" value="{{ featured_image }}" placeholder="Path or URL...">
-                </div>
-            </div>
-        </div>
-
-        <!-- Markdown editor -->
-        <div class="editor-container">
-            <textarea id="markdownEditor">{{ body }}</textarea>
-        </div>
-
-        <input type="hidden" id="postFilename" value="{{ filename or '' }}">
     </div>
 
-    <!-- AI Sidebar -->
-    <div class="ai-sidebar" id="aiSidebar">
-        <div class="sidebar-toggle" onclick="toggleSidebar()">
-            <span class="toggle-icon">&#9776;</span>
-            <span class="toggle-label">AI</span>
+    <!-- Metadata fields -->
+    <div class="meta-fields">
+        <div class="field-group field-title">
+            <label for="postTitle">TITLE</label>
+            <input type="text" id="postTitle" value="{{ title }}" placeholder="Name/Handle (Group) has left us...">
         </div>
-
-        <div class="sidebar-content">
-            <h2 class="sidebar-title">AI GENERATOR</h2>
-
-            <!-- Generate new content -->
-            <div class="ai-section">
-                <h3 class="ai-section-title">GENERATE POST</h3>
-                <div class="ai-field">
-                    <label>REAL NAME</label>
-                    <input type="text" id="aiName" placeholder="John Smith">
+        <div class="field-row">
+            <div class="field-group field-tags">
+                <label for="postTags">TAGS</label>
+                <input type="text" id="postTags" value="{{ tags }}" placeholder="c64, demoscene, retro...">
+                <div class="tag-suggestions" id="tagSuggestions">
+                    {% for tag in common_tags %}
+                    <button type="button" class="tag-pill" onclick="addTag('{{ tag }}')">{{ tag }}</button>
+                    {% endfor %}
                 </div>
-                <div class="ai-field">
-                    <label>HANDLE</label>
-                    <input type="text" id="aiHandle" placeholder="Wizard">
-                </div>
-                <div class="ai-field">
-                    <label>GROUP / CREW</label>
-                    <input type="text" id="aiGroup" placeholder="Genesis Project">
-                    <div class="group-suggestions">
-                        {% for group in common_groups[:8] %}
-                        <button type="button" class="tag-pill tag-pill-sm" onclick="document.getElementById('aiGroup').value='{{ group }}'">{{ group }}</button>
-                        {% endfor %}
-                    </div>
-                </div>
-                <div class="ai-field">
-                    <label>ROLE</label>
-                    <select id="aiRole">
-                        <option value="coder">Coder</option>
-                        <option value="musician">Musician</option>
-                        <option value="graphician">Graphician</option>
-                        <option value="swapper">Swapper</option>
-                        <option value="organizer">Organizer</option>
-                        <option value="cracker">Cracker</option>
-                    </select>
-                </div>
-                <div class="ai-field">
-                    <label>CONTRIBUTIONS</label>
-                    <textarea id="aiContributions" rows="2" placeholder="Known for amazing demos, SID tunes..."></textarea>
-                </div>
-                <div class="ai-field">
-                    <label>EXTRA CONTEXT</label>
-                    <textarea id="aiContext" rows="2" placeholder="Any additional info..."></textarea>
-                </div>
-                <button class="btn btn-ai" id="generateBtn" onclick="aiGenerate()">
-                    <span class="ai-spark">&#10038;</span> GENERATE WITH AI
-                </button>
             </div>
-
-            <div class="ai-divider"></div>
-
-            <!-- Enhance selected text -->
-            <div class="ai-section">
-                <h3 class="ai-section-title">ENHANCE TEXT</h3>
-                <p class="ai-hint">Select text in the editor, then click enhance.</p>
-                <div class="ai-field">
-                    <label>INSTRUCTION</label>
-                    <select id="aiEnhanceType">
-                        <option value="Make this more detailed and heartfelt">More detailed</option>
-                        <option value="Expand with demoscene context and vocabulary">Add scene context</option>
-                        <option value="Make this more concise while keeping the emotional tone">More concise</option>
-                        <option value="Rewrite in a more personal, tribute-like tone">More personal</option>
-                    </select>
-                </div>
-                <button class="btn btn-ai-secondary" id="enhanceBtn" onclick="aiEnhance()">
-                    <span class="ai-spark">&#10038;</span> ENHANCE SELECTION
-                </button>
+            <div class="field-group field-image">
+                <label for="postImage">FEATURED IMAGE</label>
+                <input type="text" id="postImage" value="{{ featured_image }}" placeholder="Path or URL...">
             </div>
         </div>
     </div>
+
+    <!-- Real Name field -->
+    <div class="meta-fields meta-fields-extra">
+        <div class="field-row">
+            <div class="field-group field-realname">
+                <label for="postRealName">REAL NAME</label>
+                <input type="text" id="postRealName" value="{{ real_name or '' }}" placeholder="First and last name (for RIP section)...">
+            </div>
+        </div>
+    </div>
+
+    <!-- Logo Generator Bar -->
+    <div class="logo-bar">
+        <div class="logo-bar-label">
+            <span class="ai-icon">&#9679;</span> HANDLE LOGO
+        </div>
+        <input type="text" id="logoHandle" placeholder="Type handle name..." class="logo-handle-input">
+        <select id="logoFont" class="logo-font-select">
+            <option value="">Random font</option>
+        </select>
+        <div class="logo-scale-group">
+            <label for="logoScale">SIZE</label>
+            <input type="range" id="logoScale" min="20" max="100" value="60" class="logo-scale-slider">
+            <span id="logoScaleValue">60%</span>
+        </div>
+        <button class="btn btn-ai-secondary" onclick="previewLogo()" id="logoPreviewBtn">PREVIEW</button>
+        <button class="btn btn-ai" onclick="insertLogo()" id="logoInsertBtn">INSERT INTO POST</button>
+        <div class="logo-preview-area" id="logoPreviewArea"></div>
+    </div>
+
+    <!-- WYSIWYG Editor (TinyMCE) -->
+    <div class="editor-container">
+        <textarea id="htmlEditor">{{ body }}</textarea>
+    </div>
+
+    <!-- AI Panel — seamlessly below editor -->
+    <div class="ai-panel" id="aiPanel">
+        <div class="ai-toolbar">
+            <div class="ai-toolbar-label">
+                <span class="ai-icon">&#9679;</span> AI
+            </div>
+            <div class="ai-url-input">
+                <textarea id="aiSourceUrl" rows="2" placeholder="Paste one or more URLs (one per line)&#10;CSDB, Pouet, C64GFX.com, Facebook, or any webpage..."></textarea>
+            </div>
+            <div class="ai-action-buttons">
+                <button class="btn btn-ai" onclick="aiCreatePost()" id="createPostBtn" title="Scrape profile, research, and generate a full memorial post">
+                    &#10038; CREATE POST
+                </button>
+                <button class="btn btn-ai-secondary" onclick="aiEnhance()" id="enhanceBtn" title="Select text in the editor, then click to enhance it">
+                    &#9998; ENHANCE SELECTION
+                </button>
+            </div>
+        </div>
+
+        <!-- Status area (shows progress and results) -->
+        <div class="ai-status" id="aiStatus" style="display: none;">
+            <div class="ai-status-body" id="aiStatusBody"></div>
+        </div>
+    </div>
+
+    <!-- AI Chat Assistant -->
+    <div class="ai-chat" id="aiChatPanel">
+        <div class="ai-chat-header">
+            <span class="ai-icon">&#9679;</span> AI ASSISTANT
+        </div>
+        <div class="ai-chat-messages" id="aiChatMessages">
+            <div class="ai-chat-welcome">Type an instruction to modify the post. E.g. "add more images", "expand the milestones section", "make the biography longer"...</div>
+        </div>
+        <div class="ai-chat-input">
+            <input type="text" id="aiChatInput" placeholder="Ask AI to modify the post..." onkeydown="if(event.key==='Enter')aiChat()">
+            <button class="btn btn-ai" onclick="aiChat()" id="aiChatBtn">SEND</button>
+        </div>
+    </div>
+
+    <input type="hidden" id="postFilename" value="{{ filename or '' }}">
+    <input type="hidden" id="postFormat" value="{{ format or 'html' }}">
+    <input type="hidden" id="wpPostId" value="{{ wp_post_id or '' }}">
 </div>
 
 <!-- Publish modal -->
 <div class="modal" id="publishModal">
     <div class="modal-content">
         <div class="modal-header">
-            <h3>DEPLOY TO WORDPRESS</h3>
+            <h3>{% if wp_post_id %}UPDATE ON WORDPRESS{% else %}DEPLOY TO WORDPRESS{% endif %}</h3>
             <button class="modal-close" onclick="closeModal()">&times;</button>
         </div>
         <div class="modal-body">
             <div class="modal-actions">
-                <button class="btn btn-primary" onclick="doPublish('draft')">SAVE AS DRAFT</button>
+                {% if wp_post_id %}
+                <button class="btn btn-primary" onclick="doPublish('draft')">UPDATE AS DRAFT</button>
+                <button class="btn btn-accent" onclick="doPublish('publish')">UPDATE LIVE</button>
+                {% else %}
+                <button class="btn btn-primary" onclick="doPublish('draft')">DEPLOY AS DRAFT</button>
                 <button class="btn btn-accent" onclick="doPublish('publish')">PUBLISH LIVE</button>
+                {% endif %}
             </div>
         </div>
         <div class="modal-result" id="publishResult"></div>
@@ -150,24 +147,40 @@
 
 {% block scripts %}
 <script>
-    // Initialize EasyMDE
-    const easyMDE = new EasyMDE({
-        element: document.getElementById('markdownEditor'),
-        spellChecker: false,
-        autosave: { enabled: false },
-        placeholder: "Write your memorial post here...\n\nUse the AI panel on the right to generate content.",
-        toolbar: [
-            "bold", "italic", "heading", "|",
-            "quote", "unordered-list", "ordered-list", "|",
-            "link", "image", "|",
-            "preview", "side-by-side", "fullscreen", "|",
-            "guide"
-        ],
-        status: ["lines", "words"],
-        minHeight: "400px",
+    // Initialize TinyMCE
+    tinymce.init({
+        selector: '#htmlEditor',
+        plugins: 'lists link image media code fullscreen wordcount searchreplace autosave',
+        toolbar: 'undo redo | blocks bold italic underline | bullist numlist | link image media | blockquote hr | searchreplace code fullscreen',
+        content_css: '{{ url_for("static", filename="editor-content.css") }}',
+        skin: 'oxide-dark',
+        content_css_cors: true,
+        height: 520,
+        menubar: false,
+        statusbar: true,
+        branding: false,
+        promotion: false,
+        placeholder: 'Start writing your memorial post here...',
+        valid_elements: '*[*]',
+        extended_valid_elements: 'span[style],div[style],p[style],h1[style],h2[style],a[style|href|target],img[style|src|alt|width|height]',
+        paste_as_text: false,
+        autosave_interval: '30s',
+        autosave_restore_when_empty: true,
+        setup: function(editor) {
+            // Ctrl+S to save
+            editor.addShortcut('ctrl+s', 'Save post', function() {
+                savePost();
+            });
+
+            // Store reference globally
+            window.tinyEditor = editor;
+        },
+        init_instance_callback: function(editor) {
+            // Editor ready
+        }
     });
 
-    // Keyboard shortcut: Ctrl+S to save
+    // Keyboard shortcut outside editor
     document.addEventListener('keydown', function(e) {
         if ((e.ctrlKey || e.metaKey) && e.key === 's') {
             e.preventDefault();

@@ -494,13 +494,9 @@ body {
 
 .editor-layout {
     display: flex;
+    flex-direction: column;
     gap: 0;
     min-height: calc(100vh - var(--nav-height) - 88px);
-}
-
-.editor-main {
-    flex: 1;
-    min-width: 0;
 }
 
 .editor-toolbar-top {
@@ -608,251 +604,385 @@ body {
     padding: 1px 6px;
 }
 
-/* ── EasyMDE Overrides ─────────────────────────────────────── */
+/* ── TinyMCE Overrides ─────────────────────────────────────── */
 
 .editor-container {
     border: 1px solid var(--green-dim);
 }
 
-.EasyMDEContainer {
-    background: var(--bg-input) !important;
-}
-
-.EasyMDEContainer .CodeMirror {
-    background: var(--bg-input) !important;
-    color: var(--text-primary) !important;
-    border: none !important;
-    font-family: 'IBM Plex Mono', monospace !important;
-    font-size: 14px !important;
-    min-height: 400px;
-}
-
-.EasyMDEContainer .CodeMirror-cursor {
-    border-left-color: var(--green-bright) !important;
-    border-left-width: 2px !important;
-}
-
-.EasyMDEContainer .CodeMirror-selected {
-    background: rgba(68, 255, 68, 0.15) !important;
-}
-
-.EasyMDEContainer .CodeMirror-focused .CodeMirror-selected {
-    background: rgba(68, 255, 68, 0.2) !important;
-}
-
-.EasyMDEContainer .editor-toolbar {
-    background: var(--bg-panel) !important;
-    border: none !important;
-    border-bottom: 1px solid var(--green-dim) !important;
-    opacity: 1 !important;
-    padding: 4px 8px !important;
-}
-
-.EasyMDEContainer .editor-toolbar button {
-    color: var(--text-secondary) !important;
+/* TinyMCE dark skin overrides */
+.tox.tox-tinymce {
     border: none !important;
     border-radius: 0 !important;
 }
 
-.EasyMDEContainer .editor-toolbar button:hover {
+.tox .tox-editor-header {
+    background: var(--bg-panel) !important;
+    border-bottom: 1px solid var(--green-dim) !important;
+    box-shadow: none !important;
+}
+
+.tox .tox-toolbar__primary {
+    background: var(--bg-panel) !important;
+}
+
+.tox .tox-toolbar__group {
+    border-color: var(--green-dim) !important;
+}
+
+.tox .tox-tbtn {
+    color: var(--text-secondary) !important;
+}
+
+.tox .tox-tbtn:hover {
     background: var(--green-glow) !important;
     color: var(--green-bright) !important;
 }
 
-.EasyMDEContainer .editor-toolbar button.active {
+.tox .tox-tbtn--enabled,
+.tox .tox-tbtn--enabled:hover {
     background: var(--green-dim) !important;
     color: var(--green-bright) !important;
 }
 
-.EasyMDEContainer .editor-toolbar i.separator {
-    border-left-color: var(--green-dim) !important;
+.tox .tox-tbtn svg {
+    fill: currentColor !important;
 }
 
-.EasyMDEContainer .editor-statusbar {
+.tox .tox-statusbar {
     background: var(--bg-panel) !important;
     border-top: 1px solid var(--green-dim) !important;
     color: var(--text-muted) !important;
-    padding: 4px 12px !important;
-    font-size: 11px !important;
 }
 
-.EasyMDEContainer .CodeMirror .CodeMirror-code .cm-header-1 {
-    font-size: 22px !important;
-    color: var(--green-bright) !important;
-}
-
-.EasyMDEContainer .CodeMirror .CodeMirror-code .cm-header-2 {
-    font-size: 18px !important;
-    color: var(--green-mid) !important;
-}
-
-.EasyMDEContainer .CodeMirror .CodeMirror-code .cm-comment {
+.tox .tox-statusbar__text-container {
     color: var(--text-muted) !important;
 }
 
-.EasyMDEContainer .CodeMirror .CodeMirror-code .cm-strong {
-    color: var(--amber) !important;
+.tox .tox-edit-area__iframe {
+    background: #ffffff !important;
 }
 
-.EasyMDEContainer .CodeMirror .CodeMirror-code .cm-link {
-    color: var(--ai-color) !important;
-}
+/* ── AI Panel (below editor) ──────────────────────────────── */
 
-.EasyMDEContainer .CodeMirror .CodeMirror-code .cm-url {
-    color: var(--text-muted) !important;
-}
-
-.EasyMDEContainer .editor-preview,
-.EasyMDEContainer .editor-preview-side {
-    background: var(--bg-card) !important;
-    color: var(--text-primary) !important;
-    font-family: 'IBM Plex Mono', monospace !important;
-    border: none !important;
-}
-
-.EasyMDEContainer .CodeMirror-scroll {
-    min-height: 400px;
-}
-
-/* ── AI Sidebar ────────────────────────────────────────────── */
-
-.ai-sidebar {
-    width: 320px;
+.ai-panel {
     background: var(--bg-panel);
-    border-left: 1px solid var(--ai-dim);
-    margin-left: 16px;
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    transition: width 0.3s, margin 0.3s, opacity 0.3s;
+    border: 1px solid var(--ai-dim);
+    border-top: 2px solid var(--ai-color);
+    margin-top: 0;
 }
 
-.ai-sidebar.collapsed {
-    width: 40px;
-    margin-left: 8px;
-    overflow: hidden;
-}
-
-.ai-sidebar.collapsed .sidebar-content {
-    opacity: 0;
-    pointer-events: none;
-}
-
-.sidebar-toggle {
+.ai-toolbar {
     display: flex;
     align-items: center;
-    gap: 6px;
-    padding: 10px 12px;
-    cursor: pointer;
-    color: var(--ai-color);
-    border-bottom: 1px solid var(--ai-dim);
-    transition: background 0.15s;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    flex-wrap: wrap;
+    gap: 0;
+}
+
+.ai-toolbar-label {
     font-family: 'Press Start 2P', cursive;
     font-size: 9px;
-}
-
-.sidebar-toggle:hover {
-    background: var(--ai-glow);
-}
-
-.toggle-icon {
-    font-size: 14px;
-    font-family: 'IBM Plex Mono', monospace;
-}
-
-.sidebar-content {
-    padding: 16px;
-    overflow-y: auto;
-    flex: 1;
-    transition: opacity 0.2s;
-}
-
-.sidebar-title {
-    font-family: 'Press Start 2P', cursive;
-    font-size: 10px;
     color: var(--ai-color);
+    padding: 10px 14px;
+    border-right: 1px solid rgba(255, 255, 255, 0.04);
+    white-space: nowrap;
     text-shadow: 0 0 10px var(--ai-glow);
-    margin-bottom: 16px;
-    letter-spacing: 1px;
 }
 
-.ai-section {
-    margin-bottom: 16px;
+.ai-icon {
+    display: inline-block;
+    animation: sparkle 1.5s ease-in-out infinite;
+    margin-right: 4px;
 }
 
-.ai-section-title {
-    font-family: 'Press Start 2P', cursive;
-    font-size: 8px;
-    color: var(--text-secondary);
-    margin-bottom: 12px;
-    letter-spacing: 0.5px;
+/* AI URL input — takes most of the toolbar space */
+.ai-url-input {
+    flex: 1;
+    padding: 6px 10px;
+    min-width: 0;
 }
 
-.ai-field {
-    margin-bottom: 10px;
-}
-
-.ai-field label {
-    display: block;
-    font-family: 'Press Start 2P', cursive;
-    font-size: 7px;
-    color: var(--text-muted);
-    margin-bottom: 4px;
-    letter-spacing: 0.5px;
-}
-
-.ai-field input,
-.ai-field select,
-.ai-field textarea {
+.ai-url-input textarea {
     width: 100%;
     font-family: 'IBM Plex Mono', monospace;
     font-size: 12px;
-    padding: 6px 10px;
+    padding: 6px 12px;
     background: var(--bg-input);
     color: var(--text-primary);
     border: 1px solid var(--ai-dim);
     outline: none;
     transition: border-color 0.15s;
+    resize: vertical;
+    min-height: 38px;
+    line-height: 1.4;
 }
 
-.ai-field input:focus,
-.ai-field select:focus,
-.ai-field textarea:focus {
+.ai-url-input textarea:focus {
     border-color: var(--ai-color);
-    box-shadow: 0 0 8px var(--ai-glow);
+    box-shadow: 0 0 6px var(--ai-glow);
 }
 
-.ai-field input::placeholder,
-.ai-field textarea::placeholder {
+.ai-url-input textarea::placeholder {
     color: var(--text-muted);
+    font-size: 11px;
 }
 
-.ai-field select {
+.ai-action-buttons {
+    display: flex;
+    gap: 6px;
+    padding: 6px 14px;
+}
+
+.ai-action-buttons .btn,
+.ai-action-buttons .btn-ai,
+.ai-action-buttons .btn-ai-secondary {
+    width: auto;
+    padding: 8px 14px;
+    font-size: 8px;
+    white-space: nowrap;
+}
+
+/* AI Status area — shows progress and results */
+.ai-status {
+    padding: 10px 14px;
+    border-top: 1px solid rgba(255, 255, 255, 0.04);
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.ai-status-body {
+    color: var(--text-secondary);
+}
+
+.ai-progress {
+    color: var(--ai-color);
+    animation: blink 1s step-end infinite;
+}
+
+.ai-status-success {
+    color: var(--green-bright);
+    font-weight: 600;
+}
+
+.ai-status-error {
+    color: var(--red);
+}
+
+.ai-status-info {
+    color: var(--text-secondary);
+    margin-left: 8px;
+}
+
+.ai-status-hint {
+    color: var(--text-muted);
+    margin-left: 8px;
+    font-style: italic;
+}
+
+.meta-fields-extra {
+    margin-top: 0;
+    padding-top: 0;
+}
+
+.field-realname {
+    flex: 1;
+}
+
+/* ── Logo Generator Bar ───────────────────────────────────── */
+
+.logo-bar {
+    background: var(--bg-panel);
+    border: 1px solid var(--green-dim);
+    padding: 10px 16px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+}
+
+.logo-bar-label {
+    font-size: 11px;
+    color: var(--green-mid);
+    letter-spacing: 0.15em;
+    white-space: nowrap;
+}
+
+.logo-handle-input {
+    background: var(--bg-input);
+    border: 1px solid var(--green-dim);
+    color: var(--text-primary);
+    padding: 8px 12px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    width: 180px;
+}
+
+.logo-handle-input:focus {
+    outline: none;
+    border-color: var(--green-mid);
+    box-shadow: 0 0 6px var(--green-glow);
+}
+
+.logo-font-select {
+    background: var(--bg-input);
+    border: 1px solid var(--green-dim);
+    color: var(--text-primary);
+    padding: 8px 10px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    min-width: 160px;
+}
+
+.logo-font-select:focus {
+    outline: none;
+    border-color: var(--green-mid);
+}
+
+.logo-scale-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.logo-scale-group label {
+    font-size: 10px;
+    color: var(--text-secondary);
+    letter-spacing: 0.1em;
+}
+
+.logo-scale-slider {
+    width: 90px;
+    accent-color: var(--green-mid);
     cursor: pointer;
 }
 
-.ai-field select option {
+.logo-scale-group span {
+    font-size: 10px;
+    color: var(--text-secondary);
+    min-width: 30px;
+}
+
+.logo-preview-area {
+    width: 100%;
+    min-height: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: min-height 0.3s;
+}
+
+.logo-preview-area img {
+    max-width: 100%;
+    height: auto;
+    image-rendering: pixelated;
+    border-radius: 6px;
+    border: 1px solid var(--green-dim);
+}
+
+.logo-preview-area.has-preview {
+    min-height: 60px;
+    margin-top: 8px;
+    padding: 8px;
+    background: #0a0b12;
+    border-radius: 6px;
+}
+
+/* ── AI Chat Assistant ────────────────────────────────────── */
+
+.ai-chat {
     background: var(--bg-panel);
-    color: var(--text-primary);
+    border: 1px solid var(--green-dim);
+    border-top: none;
+    padding: 0;
 }
 
-.ai-divider {
-    height: 1px;
-    background: var(--ai-dim);
-    margin: 20px 0;
-}
-
-.ai-hint {
+.ai-chat-header {
+    padding: 8px 16px;
     font-size: 11px;
+    color: var(--green-mid);
+    letter-spacing: 0.15em;
+    border-bottom: 1px solid rgba(51, 204, 51, 0.15);
+}
+
+.ai-chat-messages {
+    max-height: 200px;
+    overflow-y: auto;
+    padding: 12px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.ai-chat-welcome {
     color: var(--text-muted);
-    margin-bottom: 10px;
-    line-height: 1.4;
+    font-size: 11px;
+    font-style: italic;
+}
+
+.ai-chat-msg {
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    max-width: 85%;
+    word-wrap: break-word;
+}
+
+.ai-chat-user {
+    background: rgba(255, 170, 0, 0.12);
+    border: 1px solid rgba(255, 170, 0, 0.25);
+    color: var(--amber);
+    align-self: flex-end;
+}
+
+.ai-chat-ai {
+    background: rgba(51, 204, 51, 0.08);
+    border: 1px solid rgba(51, 204, 51, 0.2);
+    color: var(--green-mid);
+    align-self: flex-start;
+}
+
+.ai-chat-input {
+    display: flex;
+    gap: 10px;
+    padding: 12px 16px;
+    border-top: 1px solid rgba(51, 204, 51, 0.15);
+}
+
+.ai-chat-input input {
+    flex: 1;
+    min-width: 0;
+    background: var(--bg-input);
+    border: 1px solid var(--green-dim);
+    color: var(--text-primary);
+    padding: 12px 16px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 14px;
+    height: 48px;
+    box-sizing: border-box;
+}
+
+.ai-chat-input input:focus {
+    outline: none;
+    border-color: var(--green-mid);
+    box-shadow: 0 0 6px var(--green-glow);
+}
+
+.ai-chat-input .btn {
+    white-space: nowrap;
+    height: 48px;
+    width: 80px;
+    min-width: 80px;
+    flex: 0 0 80px;
+    padding: 0;
+    font-size: 11px;
+    letter-spacing: 0.1em;
 }
 
 /* ── Preview Page ──────────────────────────────────────────── */
 
 .preview-page {
-    max-width: 800px;
+    max-width: 960px;
     margin: 0 auto;
 }
 
@@ -869,9 +999,7 @@ body {
 }
 
 .preview-article {
-    background: var(--bg-card);
-    border: 1px solid var(--green-dim);
-    padding: 32px;
+    padding: 16px 0;
 }
 
 .preview-header {
@@ -898,44 +1026,11 @@ body {
 
 .preview-featured-image img {
     max-width: 100%;
-    border: 1px solid var(--green-dim);
 }
 
+/* Preview content — no style overrides, let inline styles on the post HTML take control */
 .preview-content {
-    font-size: 15px;
-    line-height: 1.8;
-    color: var(--text-primary);
-}
-
-.preview-content p {
-    margin-bottom: 16px;
-}
-
-.preview-content strong {
-    color: var(--amber);
-}
-
-.preview-content a {
-    color: var(--ai-color);
-    text-decoration: underline;
-    text-decoration-color: var(--ai-dim);
-}
-
-.preview-content a:hover {
-    text-decoration-color: var(--ai-color);
-}
-
-.preview-content h2, .preview-content h3 {
-    font-family: 'VT323', monospace;
-    color: var(--green-mid);
-    margin: 24px 0 12px;
-}
-
-.preview-content blockquote {
-    border-left: 3px solid var(--green-dim);
-    padding-left: 16px;
-    color: var(--text-secondary);
-    font-style: italic;
+    /* Clean container — the post's dark cinematic inline styles handle everything */
 }
 
 /* ── Modal ─────────────────────────────────────────────────── */
@@ -1124,22 +1219,6 @@ body {
 /* ── Responsive ────────────────────────────────────────────── */
 
 @media (max-width: 900px) {
-    .editor-layout {
-        flex-direction: column;
-    }
-
-    .ai-sidebar {
-        width: 100%;
-        margin-left: 0;
-        margin-top: 16px;
-        border-left: none;
-        border-top: 1px solid var(--ai-dim);
-    }
-
-    .ai-sidebar.collapsed {
-        width: 100%;
-    }
-
     .field-row {
         flex-direction: column;
     }
@@ -1151,5 +1230,14 @@ body {
     .modal-content {
         min-width: auto;
         margin: 0 16px;
+    }
+
+    .ai-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .ai-action-buttons {
+        flex-wrap: wrap;
     }
 }

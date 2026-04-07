@@ -10,16 +10,13 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 
-    <!-- EasyMDE markdown editor -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.css">
+    <!-- TinyMCE WYSIWYG editor (no-API-key CDN for local dev) -->
+    <script src="https://cdn.jsdelivr.net/npm/tinymce@7/tinymce.min.js" referrerpolicy="origin"></script>
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=3">
     {% block head %}{% endblock %}
 </head>
 <body>
-    <!-- CRT scanline overlay -->
-    <div class="crt-overlay"></div>
-
     <!-- Top nav -->
     <nav class="topnav">
         <a href="{{ url_for('index') }}" class="nav-logo">
@@ -54,12 +51,11 @@
 
     <!-- Footer -->
     <footer class="footer">
-        <span class="footer-text">8BIT LEGENDS // MEMORIAL EDITOR v1.0</span>
+        <span class="footer-text">8BIT LEGENDS // MEMORIAL EDITOR v2.0</span>
         <span class="footer-cursor">&#9608;</span>
     </footer>
 
-    <script src="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.js"></script>
-    <script src="{{ url_for('static', filename='app.js') }}"></script>
+    <script src="{{ url_for('static', filename='app.js') }}?v=3"></script>
     {% block scripts %}{% endblock %}
 </body>
 </html>

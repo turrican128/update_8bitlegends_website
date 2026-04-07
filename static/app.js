@@ -1,8 +1,44 @@
 /* ═══════════════════════════════════════════════════════════════
-   8BIT LEGENDS - Client-side JavaScript
+   8BIT LEGENDS v2.0 - Client-side JavaScript
+   TinyMCE WYSIWYG editor + AI panel
    ═══════════════════════════════════════════════════════════════ */
 
-// ── Save Post ─────────────────────────────────────────────────
+// ── TinyMCE Helpers ──────────────────────────────────────────
+
+function getEditorContent() {
+    if (window.tinyEditor) {
+        return window.tinyEditor.getContent();
+    }
+    const el = document.getElementById('htmlEditor');
+    return el ? el.value : '';
+}
+
+function setEditorContent(html) {
+    if (window.tinyEditor) {
+        window.tinyEditor.setContent(html);
+    }
+}
+
+function insertAtCursor(html) {
+    if (window.tinyEditor) {
+        window.tinyEditor.execCommand('mceInsertContent', false, html);
+    }
+}
+
+function getSelectedText() {
+    if (window.tinyEditor) {
+        return window.tinyEditor.selection.getContent();
+    }
+    return '';
+}
+
+function replaceSelection(html) {
+    if (window.tinyEditor) {
+        window.tinyEditor.selection.setContent(html);
+    }
+}
+
+// ── Save Post ────────────────────────────────────────────────
 
 function savePost() {
     const btn = document.getElementById('saveBtn');
@@ -11,10 +47,9 @@ function savePost() {
     const title = document.getElementById('postTitle').value.trim();
     const tags = document.getElementById('postTags').value.trim();
     const featuredImage = document.getElementById('postImage').value.trim();
+    const realName = (document.getElementById('postRealName') || {}).value || '';
     const filename = document.getElementById('postFilename').value;
-
-    // Get content from EasyMDE if available
-    const body = (typeof easyMDE !== 'undefined') ? easyMDE.value() : '';
+    const body = getEditorContent();
 
     if (!title) {
         showNotification('Title is required', 'error');
@@ -26,17 +61,19 @@ function savePost() {
     fetch('/save', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title, tags, featured_image: featuredImage, body, filename })
+        body: JSON.stringify({
+            title, tags, featured_image: featuredImage,
+            real_name: realName.trim(),
+            body, filename, format: 'html'
+        })
     })
     .then(r => r.json())
     .then(data => {
         btn.classList.remove('loading');
         if (data.ok) {
             showNotification(data.message, 'success');
-            // Update the hidden filename field if it was a new post
             if (!filename && data.filename) {
                 document.getElementById('postFilename').value = data.filename;
-                // Update URL without reload
                 history.replaceState(null, '', '/edit/' + data.filename);
             }
         } else {
@@ -49,7 +86,7 @@ function savePost() {
     });
 }
 
-// ── Tag Helpers ───────────────────────────────────────────────
+// ── Tag Helpers ──────────────────────────────────────────────
 
 function addTag(tag) {
     const input = document.getElementById('postTags');
@@ -62,91 +99,111 @@ function addTag(tag) {
     }
 }
 
-// ── AI Generate ───────────────────────────────────────────────
+// ── AI Create Post (one-shot) ────────────────────────────────
 
-function aiGenerate() {
-    const btn = document.getElementById('generateBtn');
+function aiCreatePost() {
+    const btn = document.getElementById('createPostBtn');
     if (!btn || btn.classList.contains('loading')) return;
 
-    const name = document.getElementById('aiName').value.trim();
-    const handle = document.getElementById('aiHandle').value.trim();
-    const group = document.getElementById('aiGroup').value.trim();
-    const role = document.getElementById('aiRole').value;
-    const contributions = document.getElementById('aiContributions').value.trim();
-    const extraContext = document.getElementById('aiContext').value.trim();
-
-    if (!name || !handle) {
-        showNotification('Name and handle are required', 'error');
+    const rawInput = document.getElementById('aiSourceUrl').value.trim();
+    if (!rawInput) {
+        showNotification('Paste one or more URLs or type a scene handle', 'error');
         return;
     }
 
+    // Split by newlines, filter empty lines
+    const sources = rawInput.split('\n').map(s => s.trim()).filter(Boolean);
+
     btn.classList.add('loading');
 
-    fetch('/ai/generate', {
+    // Show status area with progress
+    const statusArea = document.getElementById('aiStatus');
+    const statusBody = document.getElementById('aiStatusBody');
+    if (statusArea) statusArea.style.display = 'block';
+    const sourceCount = sources.length;
+    if (statusBody) statusBody.innerHTML = '<span class="ai-progress">Scraping ' + sourceCount + ' source' + (sourceCount > 1 ? 's' : '') + ' and generating memorial post...</span>';
+
+    fetch('/ai/create-post', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            name, handle, group, role, contributions,
-            extra_context: extraContext
-        })
+        body: JSON.stringify({ sources: sources })
     })
     .then(r => r.json())
     .then(data => {
         btn.classList.remove('loading');
         if (data.ok) {
-            // Populate the editor
-            if (typeof easyMDE !== 'undefined') {
-                easyMDE.value(data.content);
+            // Fill the entire editor with generated content
+            if (data.content) {
+                setEditorContent(data.content);
             }
-            // Update title if we have one
+            // Set title
             if (data.title) {
                 document.getElementById('postTitle').value = data.title;
             }
-            // Update tags
+            // Set tags
             if (data.tags && data.tags.length) {
                 document.getElementById('postTags').value = data.tags.join(', ');
             }
-            showNotification('AI content generated! Review and edit as needed.', 'success');
+            // Set real name if found
+            if (data.real_name) {
+                var rnEl = document.getElementById('postRealName');
+                if (rnEl) rnEl.value = data.real_name;
+            }
+
+            // Show what was found in the status area
+            if (statusBody) {
+                let statusHtml = '<span class="ai-status-success">Post generated!</span>';
+                if (data.profile_info) {
+                    statusHtml += '<span class="ai-status-info"> Found: ' + data.profile_info + '</span>';
+                }
+                statusHtml += '<span class="ai-status-hint"> Edit the content above, then save when ready.</span>';
+                statusBody.innerHTML = statusHtml;
+            }
+
+            showNotification('Memorial post created! Edit it above.', 'success');
         } else {
             showNotification(data.error || 'Generation failed', 'error');
+            if (statusBody) {
+                statusBody.innerHTML = '<span class="ai-status-error">' + (data.error || 'Generation failed') + '</span>';
+            }
         }
     })
     .catch(err => {
         btn.classList.remove('loading');
-        showNotification('AI generation failed: ' + err.message, 'error');
+        showNotification('Failed: ' + err.message, 'error');
+        if (statusBody) {
+            statusBody.innerHTML = '<span class="ai-status-error">Failed: ' + err.message + '</span>';
+        }
     });
 }
 
-// ── AI Enhance ────────────────────────────────────────────────
+// ── AI Enhance Selection ─────────────────────────────────────
 
 function aiEnhance() {
     const btn = document.getElementById('enhanceBtn');
     if (!btn || btn.classList.contains('loading')) return;
 
-    if (typeof easyMDE === 'undefined') return;
-
-    const cm = easyMDE.codemirror;
-    const selectedText = cm.getSelection();
-
+    const selectedText = getSelectedText();
     if (!selectedText.trim()) {
-        showNotification('Select some text in the editor first', 'error');
+        showNotification('Select some text in the editor first, then click Enhance', 'error');
         return;
     }
-
-    const instruction = document.getElementById('aiEnhanceType').value;
 
     btn.classList.add('loading');
 
     fetch('/ai/enhance', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: selectedText, instruction })
+        body: JSON.stringify({
+            text: selectedText,
+            instruction: 'Make this more detailed and heartfelt, using demoscene vocabulary naturally'
+        })
     })
     .then(r => r.json())
     .then(data => {
         btn.classList.remove('loading');
         if (data.ok) {
-            cm.replaceSelection(data.content);
+            replaceSelection(data.content);
             showNotification('Text enhanced!', 'success');
         } else {
             showNotification(data.error || 'Enhancement failed', 'error');
@@ -158,37 +215,15 @@ function aiEnhance() {
     });
 }
 
-// ── Sidebar Toggle ────────────────────────────────────────────
-
-function toggleSidebar() {
-    const sidebar = document.getElementById('aiSidebar');
-    if (sidebar) {
-        sidebar.classList.toggle('collapsed');
-    }
-}
-
-// ── Publish ───────────────────────────────────────────────────
+// ── Publish ──────────────────────────────────────────────────
 
 function publishPost(filename, status) {
     const modal = document.getElementById('publishModal');
-    const filenameEl = document.getElementById('publishFilename');
     const resultEl = document.getElementById('publishResult');
 
-    if (filenameEl) filenameEl.textContent = filename;
     if (resultEl) {
         resultEl.style.display = 'none';
         resultEl.className = 'modal-result';
-    }
-
-    // Set up button handlers
-    const draftBtn = document.getElementById('publishDraftBtn');
-    const liveBtn = document.getElementById('publishLiveBtn');
-
-    if (draftBtn) {
-        draftBtn.onclick = () => doPublishFromDashboard(filename, 'draft');
-    }
-    if (liveBtn) {
-        liveBtn.onclick = () => doPublishFromDashboard(filename, 'publish');
     }
 
     modal.classList.add('active');
@@ -223,7 +258,6 @@ function doPublishFromDashboard(filename, status) {
     });
 }
 
-// Publish from editor page
 function publishFromEditor() {
     const modal = document.getElementById('publishModal');
     modal.classList.add('active');
@@ -256,7 +290,7 @@ document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') closeModal();
 });
 
-// ── Sync from WordPress ───────────────────────────────────────
+// ── Sync from WordPress ──────────────────────────────────────
 
 function syncFromWordPress() {
     const btn = document.getElementById('syncBtn');
@@ -281,7 +315,7 @@ function syncFromWordPress() {
     });
 }
 
-// ── Delete Post ───────────────────────────────────────────────
+// ── Delete Post ──────────────────────────────────────────────
 
 function deletePost(filename) {
     if (!confirm('Delete ' + filename + '? This cannot be undone.')) return;
@@ -291,7 +325,6 @@ function deletePost(filename) {
     .then(data => {
         if (data.ok) {
             showNotification(data.message, 'success');
-            // Remove the card from DOM
             const cards = document.querySelectorAll('.post-card');
             cards.forEach(card => {
                 const editLink = card.querySelector('a[href*="' + filename + '"]');
@@ -311,10 +344,199 @@ function deletePost(filename) {
     });
 }
 
-// ── Notifications ─────────────────────────────────────────────
+// ── Logo Generator ──────────────────────────────────────────
+
+// Load available fonts on page load
+(function loadLogoFonts() {
+    const select = document.getElementById('logoFont');
+    if (!select) return;
+    fetch('/logo/fonts')
+        .then(r => r.json())
+        .then(data => {
+            if (data.ok && data.fonts) {
+                data.fonts.forEach(f => {
+                    const opt = document.createElement('option');
+                    opt.value = f.name;
+                    opt.textContent = f.name + ' (' + f.height + 'px, ' + (f.year || '?') + ' by ' + (f.maker || '?') + ')';
+                    select.appendChild(opt);
+                });
+            }
+        })
+        .catch(() => {});
+})();
+
+var _lastLogoDataUri = null;
+
+// Wire up scale slider label
+(function() {
+    const slider = document.getElementById('logoScale');
+    const label = document.getElementById('logoScaleValue');
+    if (slider && label) {
+        slider.addEventListener('input', function() {
+            label.textContent = this.value + '%';
+        });
+    }
+})();
+
+function _getLogoMaxWidth() {
+    const slider = document.getElementById('logoScale');
+    const pct = slider ? parseInt(slider.value) : 60;
+    return Math.round(880 * pct / 100);
+}
+
+function previewLogo() {
+    const handle = document.getElementById('logoHandle').value.trim();
+    if (!handle) {
+        showNotification('Type a handle name first', 'error');
+        return;
+    }
+
+    const font = document.getElementById('logoFont').value;
+    const area = document.getElementById('logoPreviewArea');
+    const btn = document.getElementById('logoPreviewBtn');
+    if (btn) btn.classList.add('loading');
+
+    const maxW = _getLogoMaxWidth();
+    let url = '/logo/' + encodeURIComponent(handle) + '?max_width=' + maxW;
+    if (font) url += '&font=' + encodeURIComponent(font);
+
+    // Fetch as blob to show preview, then also get base64 for insertion
+    fetch(url)
+        .then(r => {
+            if (!r.ok) throw new Error('Logo generation failed');
+            return r.blob();
+        })
+        .then(blob => {
+            if (btn) btn.classList.remove('loading');
+            const imgUrl = URL.createObjectURL(blob);
+            area.innerHTML = '<img src="' + imgUrl + '" alt="' + handle + ' logo">';
+            area.classList.add('has-preview');
+
+            // Also convert to data URI for insertion
+            const reader = new FileReader();
+            reader.onload = function() {
+                _lastLogoDataUri = reader.result;
+            };
+            reader.readAsDataURL(blob);
+        })
+        .catch(err => {
+            if (btn) btn.classList.remove('loading');
+            showNotification('Logo preview failed: ' + err.message, 'error');
+        });
+}
+
+function insertLogo() {
+    const handle = document.getElementById('logoHandle').value.trim();
+    if (!handle) {
+        showNotification('Type a handle name and preview first', 'error');
+        return;
+    }
+
+    if (!_lastLogoDataUri) {
+        // Auto-preview then insert
+        const font = document.getElementById('logoFont').value;
+        const btn = document.getElementById('logoInsertBtn');
+        if (btn) btn.classList.add('loading');
+
+        const maxW = _getLogoMaxWidth();
+        let url = '/logo/' + encodeURIComponent(handle) + '?max_width=' + maxW;
+        if (font) url += '&font=' + encodeURIComponent(font);
+        fetch(url)
+            .then(r => r.blob())
+            .then(blob => {
+                const reader = new FileReader();
+                reader.onload = function() {
+                    _lastLogoDataUri = reader.result;
+                    _doInsertLogo(handle);
+                    if (btn) btn.classList.remove('loading');
+                };
+                reader.readAsDataURL(blob);
+            })
+            .catch(err => {
+                if (btn) btn.classList.remove('loading');
+                showNotification('Failed: ' + err.message, 'error');
+            });
+        return;
+    }
+
+    _doInsertLogo(handle);
+}
+
+function _doInsertLogo(handle) {
+    const logoHtml = '<div style="text-align:center;margin:0 0 1.5rem;padding:0">' +
+        '<img src="' + _lastLogoDataUri + '" alt="' + handle + '" ' +
+        'style="display:inline-block;max-width:100%;height:auto;image-rendering:pixelated;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,0.6)">' +
+        '</div>';
+
+    // Insert at the very top of the editor content
+    const current = getEditorContent();
+    if (current.trim()) {
+        setEditorContent(logoHtml + '\n' + current);
+    } else {
+        setEditorContent(logoHtml);
+    }
+    showNotification('Logo inserted at top of post!', 'success');
+    _lastLogoDataUri = null;
+}
+
+// ── AI Chat Assistant ────────────────────────────────────────
+
+function aiChat() {
+    const input = document.getElementById('aiChatInput');
+    const btn = document.getElementById('aiChatBtn');
+    const instruction = input.value.trim();
+    if (!instruction || (btn && btn.classList.contains('loading'))) return;
+
+    const currentContent = getEditorContent();
+    if (!currentContent.trim()) {
+        showNotification('No content in editor to modify', 'error');
+        return;
+    }
+
+    // Show user message
+    appendChatMessage('user', instruction);
+    input.value = '';
+    if (btn) btn.classList.add('loading');
+
+    fetch('/ai/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ instruction, content: currentContent })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (btn) btn.classList.remove('loading');
+        if (data.ok) {
+            setEditorContent(data.content);
+            appendChatMessage('ai', data.summary || 'Done! Content updated.');
+        } else {
+            appendChatMessage('ai', 'Error: ' + (data.error || 'Unknown error'));
+        }
+    })
+    .catch(err => {
+        if (btn) btn.classList.remove('loading');
+        appendChatMessage('ai', 'Error: ' + err.message);
+    });
+}
+
+function appendChatMessage(role, text) {
+    const container = document.getElementById('aiChatMessages');
+    if (!container) return;
+
+    // Remove welcome message on first use
+    const welcome = container.querySelector('.ai-chat-welcome');
+    if (welcome) welcome.remove();
+
+    const msg = document.createElement('div');
+    msg.className = 'ai-chat-msg ai-chat-' + role;
+    msg.textContent = text;
+    container.appendChild(msg);
+    container.scrollTop = container.scrollHeight;
+}
+
+// ── Notifications ────────────────────────────────────────────
 
 function showNotification(message, type) {
-    // Remove existing notifications
     const existing = document.querySelectorAll('.notification');
     existing.forEach(n => n.remove());
 
