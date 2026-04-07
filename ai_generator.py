@@ -352,13 +352,17 @@ Output ONLY the HTML content (the complete <section> wrapper + RIP div). No mark
     }
 
 
-def restyle_post(current_html, supplementary_sources=None):
+def restyle_post(current_html, supplementary_sources=None, real_name="", title=""):
     """Restyle a fetched WordPress post to match the 8bit Legends dark cinematic theme.
 
     Preserves all existing text, images, and links while restructuring into
     the styled template sections with proper inline CSS.
     """
     extra_info = ""
+    if real_name:
+        extra_info += f"\n\nThe person's real name is: {real_name} (use this for the RIP section)"
+    if title:
+        extra_info += f"\nPost title: {title}"
     if supplementary_sources:
         all_data = []
         for source in supplementary_sources:
@@ -388,6 +392,7 @@ INSTRUCTIONS:
 - Create works cards from any demos/releases/games mentioned
 - If information for a section isn't available, omit that section rather than inventing content
 - The RIP section goes OUTSIDE the main <section> wrapper
+- The RIP section MUST include "Rest in Peace [Real Name]" with the person's real/first name
 - Use the flower image URL: https://amigac64.wordpress.com/wp-content/uploads/2015/04/flower6.png
 
 Output ONLY the complete HTML (the <section> wrapper + RIP div). No markdown, no explanation."""

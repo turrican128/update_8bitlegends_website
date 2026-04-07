@@ -193,6 +193,10 @@ function aiRestylePost() {
     const rawInput = (document.getElementById('aiSourceUrl').value || '').trim();
     const sources = rawInput ? rawInput.split('\n').map(s => s.trim()).filter(Boolean) : [];
 
+    // Get metadata from editor fields
+    const realName = (document.getElementById('postRealName').value || '').trim();
+    const title = (document.getElementById('postTitle').value || '').trim();
+
     btn.classList.add('loading');
 
     const statusArea = document.getElementById('aiStatus');
@@ -203,7 +207,7 @@ function aiRestylePost() {
     fetch('/ai/restyle-post', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content: content, sources: sources })
+        body: JSON.stringify({ content: content, sources: sources, real_name: realName, title: title })
     })
     .then(r => r.json())
     .then(data => {
