@@ -259,8 +259,7 @@ C64_STYLES = {
     "wrapper": (
         f"max-width:880px;margin:0 auto 4rem auto;padding:2.5rem 2rem 3rem;"
         f"font-family:system-ui,-apple-system,sans-serif;line-height:1.8;color:{C64_COLORS['text_primary']};"
-        f"background:{C64_COLORS['bg_main']} url(\"{C64_SVG}\") no-repeat center center;"
-        f"background-size:90% auto;"
+        f"background:{C64_COLORS['bg_main']};"
         f"border:3px solid {C64_COLORS['border']};border-radius:4px;"
         f"box-shadow:{C64_COLORS['shadow_main']};position:relative;overflow:hidden"
     ),
@@ -413,8 +412,7 @@ AMIGA_STYLES = {
     "wrapper": (
         f"max-width:880px;margin:0 auto 4rem auto;padding:2.5rem 2rem 3rem;"
         f"font-family:system-ui,-apple-system,sans-serif;line-height:1.8;color:{AMIGA_COLORS['text_primary']};"
-        f"background: url(\"{AMIGA_SVG}\") no-repeat center center, {AMIGA_COLORS['bg_main_gradient']};"
-        f"background-size:90% auto, auto;"
+        f"background:{AMIGA_COLORS['bg_main_gradient']};"
         f"border-radius:12px;border:1px solid {AMIGA_COLORS['border']};"
         f"box-shadow:{AMIGA_COLORS['shadow_main']};position:relative;overflow:hidden"
     ),

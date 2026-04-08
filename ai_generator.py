@@ -524,6 +524,19 @@ Output ONLY the complete HTML (the <section> wrapper + RIP div). No markdown, no
     if "Rest in Peace" not in content and "rest in peace" not in content.lower():
         content += rip_html
 
+    # Inject SVG watermark into the wrapper's background (post-process)
+    if preset in ("c64", "amiga"):
+        from post_styles import C64_SVG, AMIGA_SVG
+        svg_url = C64_SVG if preset == "c64" else AMIGA_SVG
+        # Find the opening <section style="..."> and inject the SVG background
+        def _inject_watermark(match):
+            style = match.group(1)
+            # Add SVG as additional background image layer
+            if "background" in style:
+                style = style.rstrip(";") + f";background-image:url({svg_url});background-repeat:no-repeat;background-position:center center;background-size:90% auto"
+            return f'<section style="{style}"'
+        content = re.sub(r'<section\s+style="([^"]*)"', _inject_watermark, content, count=1)
+
     title = _extract_title(content, [])
 
     return {
