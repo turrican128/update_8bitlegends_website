@@ -359,16 +359,15 @@ def restyle_post(current_html, supplementary_sources=None, real_name="", title="
     the styled template sections with proper inline CSS.
     """
     extra_info = ""
-    if real_name:
-        extra_info += f"\n\nThe person's real name is: {real_name} (use this for the RIP section)"
-    if title:
-        extra_info += f"\nPost title: {title}"
     if supplementary_sources:
         all_data = []
         for source in supplementary_sources:
             data = detect_and_scrape(source.strip())
             all_data.append(data)
-        extra_info = f"\n\nAdditional information from supplementary sources:\n{_format_all_sources(all_data)}"
+        extra_info += f"\n\nAdditional information from supplementary sources:\n{_format_all_sources(all_data)}"
+
+    # Real name for RIP section — always include this block so Claude never skips it
+    rip_name = real_name if real_name else "extract the person's first/real name from the content"
 
     template_html = get_template_html()
 
@@ -378,6 +377,9 @@ EXISTING POST CONTENT (preserve ALL information, images, links, and text):
 
 {current_html}
 {extra_info}
+
+Post title: {title}
+Person's real name for RIP section: {rip_name}
 
 TARGET TEMPLATE (use these EXACT inline styles and section structure):
 {template_html}
@@ -390,9 +392,9 @@ INSTRUCTIONS:
 - Extract dates, handle, group info from the original to fill the header
 - Create milestones from chronological facts in the original
 - Create works cards from any demos/releases/games mentioned
-- If information for a section isn't available, omit that section rather than inventing content
-- The RIP section goes OUTSIDE the main <section> wrapper
-- The RIP section MUST include "Rest in Peace [Real Name]" with the person's real/first name
+- If information for a non-essential section (quote, milestones, works) isn't available, you may omit it
+- The RIP section is MANDATORY — NEVER omit it. It goes OUTSIDE the main <section> wrapper as a separate <div>
+- The RIP section MUST include "Rest in Peace {rip_name}" with the flower image
 - Use the flower image URL: https://amigac64.wordpress.com/wp-content/uploads/2015/04/flower6.png
 
 Output ONLY the complete HTML (the <section> wrapper + RIP div). No markdown, no explanation."""

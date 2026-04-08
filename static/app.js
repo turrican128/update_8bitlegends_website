@@ -15,7 +15,9 @@ function getEditorContent() {
 
 function setEditorContent(html) {
     if (window.tinyEditor) {
+        window.tinyEditor.undoManager.add();   // snapshot current state for Ctrl+Z
         window.tinyEditor.setContent(html);
+        window.tinyEditor.undoManager.add();   // snapshot new state
     }
 }
 
