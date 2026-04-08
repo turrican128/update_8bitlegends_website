@@ -184,73 +184,48 @@ POST_STYLES = {
 # ── SVG Watermarks (inline, no external files) ──────────────
 
 # C64 breadbin computer silhouette — subtle outline
-C64_SVG = (
-    "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 250' opacity='0.06'%3E"
-    "%3Cg fill='none' stroke='%239090ff' stroke-width='1.5'%3E"
-    # Monitor/TV
+C64_SVG = ("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 250'%3E"
+    "%3Cg fill='none' stroke='%239090ff' stroke-width='1.5' opacity='0.07'%3E"
     "%3Crect x='110' y='10' width='180' height='130' rx='8'/%3E"
     "%3Crect x='125' y='22' width='150' height='100' rx='3'/%3E"
     "%3Crect x='155' y='145' width='90' height='8' rx='2'/%3E"
-    # C64 breadbin keyboard unit
     "%3Cpath d='M50 175 h300 q8 0 8 8 v42 q0 8-8 8 H50 q-8 0-8-8 v-42 q0-8 8-8z'/%3E"
-    # Keyboard keys (3 rows)
-    "%3Cg stroke-width='0.8'%3E"
-    "%3Crect x='60' y='182' width='280' height='8' rx='1'/%3E"
-    "%3Crect x='60' y='195' width='280' height='8' rx='1'/%3E"
-    "%3Crect x='80' y='208' width='240' height='8' rx='1'/%3E"
-    "%3C/g%3E"
-    # Function keys
-    "%3Cg stroke-width='0.6'%3E"
-    "%3Crect x='62' y='183' width='14' height='6' rx='1'/%3E"
-    "%3Crect x='78' y='183' width='14' height='6' rx='1'/%3E"
-    "%3Crect x='94' y='183' width='14' height='6' rx='1'/%3E"
-    "%3Crect x='110' y='183' width='14' height='6' rx='1'/%3E"
-    "%3C/g%3E"
-    # Joystick
-    "%3Ccircle cx='375' y='210' r='15' cy='210'/%3E"
+    "%3Crect x='60' y='182' width='280' height='8' rx='1' stroke-width='0.8'/%3E"
+    "%3Crect x='60' y='195' width='280' height='8' rx='1' stroke-width='0.8'/%3E"
+    "%3Crect x='80' y='208' width='240' height='8' rx='1' stroke-width='0.8'/%3E"
+    "%3Crect x='62' y='183' width='14' height='6' rx='1' stroke-width='0.6'/%3E"
+    "%3Crect x='78' y='183' width='14' height='6' rx='1' stroke-width='0.6'/%3E"
+    "%3Crect x='94' y='183' width='14' height='6' rx='1' stroke-width='0.6'/%3E"
+    "%3Crect x='110' y='183' width='14' height='6' rx='1' stroke-width='0.6'/%3E"
+    "%3Ccircle cx='375' cy='210' r='15'/%3E"
     "%3Cline x1='375' y1='195' x2='375' y2='175'/%3E"
     "%3Ccircle cx='375' cy='173' r='4'/%3E"
-    # Floppy disk
     "%3Crect x='10' y='80' width='50' height='55' rx='3'/%3E"
     "%3Crect x='18' y='80' width='34' height='20' rx='1'/%3E"
     "%3Crect x='25' y='110' width='20' height='15' rx='1'/%3E"
-    "%3C/g%3E"
-    "%3C/svg%3E"
-)
+    "%3C/g%3E%3C/svg%3E")
 
 # Amiga 500 computer silhouette — subtle outline
-AMIGA_SVG = (
-    "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 250' opacity='0.05'%3E"
-    "%3Cg fill='none' stroke='%23ff8c00' stroke-width='1.5'%3E"
-    # Monitor
+AMIGA_SVG = ("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 250'%3E"
+    "%3Cg fill='none' stroke='%23ff8c00' stroke-width='1.5' opacity='0.06'%3E"
     "%3Crect x='100' y='5' width='200' height='140' rx='6'/%3E"
     "%3Crect x='112' y='15' width='176' height='115' rx='3'/%3E"
-    "%3Ctrapezoid /%3E"
     "%3Cpath d='M160 148 h80 l10 12 h-100z'/%3E"
-    # Amiga 500 main unit (wide, low profile)
     "%3Cpath d='M30 175 h340 q6 0 6 6 v35 q0 6-6 6 H30 q-6 0-6-6 v-35 q0-6 6-6z'/%3E"
-    # Keyboard area
-    "%3Cg stroke-width='0.8'%3E"
-    "%3Crect x='40' y='180' width='240' height='7' rx='1'/%3E"
-    "%3Crect x='40' y='191' width='240' height='7' rx='1'/%3E"
-    "%3Crect x='55' y='202' width='210' height='7' rx='1'/%3E"
-    "%3C/g%3E"
-    # Disk drive slot (right side)
+    "%3Crect x='40' y='180' width='240' height='7' rx='1' stroke-width='0.8'/%3E"
+    "%3Crect x='40' y='191' width='240' height='7' rx='1' stroke-width='0.8'/%3E"
+    "%3Crect x='55' y='202' width='210' height='7' rx='1' stroke-width='0.8'/%3E"
     "%3Crect x='300' y='183' width='60' height='25' rx='2'/%3E"
     "%3Cline x1='305' y1='195' x2='355' y2='195' stroke-width='0.6'/%3E"
-    # Boing ball (iconic Amiga)
     "%3Ccircle cx='50' cy='80' r='25'/%3E"
     "%3Cpath d='M35 65 q15 15 0 30' stroke-width='0.8'/%3E"
     "%3Cpath d='M50 60 q0 20 0 40' stroke-width='0.8'/%3E"
     "%3Cpath d='M65 65 q-15 15 0 30' stroke-width='0.8'/%3E"
-    # Checkmark/tick pattern (Amiga colors reference)
-    "%3Cline x1='365' y1='60' x2='365' y2='120' stroke-width='3' stroke='%23ff4444' opacity='0.4'/%3E"
-    "%3Cline x1='372' y1='60' x2='372' y2='120' stroke-width='3' stroke='%2344ff44' opacity='0.4'/%3E"
-    "%3Cline x1='379' y1='60' x2='379' y2='120' stroke-width='3' stroke='%234444ff' opacity='0.4'/%3E"
-    "%3Cline x1='386' y1='60' x2='386' y2='120' stroke-width='3' stroke='%23ffaa00' opacity='0.4'/%3E"
-    "%3C/g%3E"
-    "%3C/svg%3E"
-)
+    "%3Cline x1='365' y1='60' x2='365' y2='120' stroke-width='3' stroke='%23ff4444' opacity='0.5'/%3E"
+    "%3Cline x1='372' y1='60' x2='372' y2='120' stroke-width='3' stroke='%2344ff44' opacity='0.5'/%3E"
+    "%3Cline x1='379' y1='60' x2='379' y2='120' stroke-width='3' stroke='%234444ff' opacity='0.5'/%3E"
+    "%3Cline x1='386' y1='60' x2='386' y2='120' stroke-width='3' stroke='%23ffaa00' opacity='0.5'/%3E"
+    "%3C/g%3E%3C/svg%3E")
 
 
 # ── C64 Retro Preset ─────────────────────────────────────────
@@ -438,8 +413,8 @@ AMIGA_STYLES = {
     "wrapper": (
         f"max-width:880px;margin:0 auto 4rem auto;padding:2.5rem 2rem 3rem;"
         f"font-family:system-ui,-apple-system,sans-serif;line-height:1.8;color:{AMIGA_COLORS['text_primary']};"
-        f"background:{AMIGA_COLORS['bg_main_gradient']} url(\"{AMIGA_SVG}\") no-repeat center center;"
-        f"background-size:90% auto;"
+        f"background: url(\"{AMIGA_SVG}\") no-repeat center center, {AMIGA_COLORS['bg_main_gradient']};"
+        f"background-size:90% auto, auto;"
         f"border-radius:12px;border:1px solid {AMIGA_COLORS['border']};"
         f"box-shadow:{AMIGA_COLORS['shadow_main']};position:relative;overflow:hidden"
     ),
