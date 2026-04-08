@@ -239,6 +239,97 @@ def detect_and_scrape(source):
         return scrape_generic(source)
 
 
+# ── Search Functions ─────────────────────────────────────────
+
+
+def search_csdb(query):
+    """Search CSDB for a scener handle and return profile URLs."""
+    try:
+        search_url = f"https://csdb.dk/search/?seinession=all&search={requests.utils.quote(query)}&Go.x=0&Go.y=0"
+        resp = requests.get(search_url, timeout=10, headers=HTTP_HEADERS)
+        resp.raise_for_status()
+        html = resp.text
+
+        # Find scener profile links: /scener/?id=XXXX
+        matches = re.findall(r'href="(/scener/\?id=\d+)"[^>]*>(.*?)</a>', html, re.DOTALL)
+        urls = []
+        for path, link_text in matches:
+            name = re.sub(r'<[^>]+>', '', link_text).strip()
+            url = f"https://csdb.dk{path}"
+            # Prioritize exact match
+            if name.lower() == query.lower():
+                urls.insert(0, url)
+            elif len(urls) < 3:
+                urls.append(url)
+        # Dedupe preserving order
+        return list(dict.fromkeys(urls))[:2]
+    except Exception:
+        return []
+
+
+def search_pouet(query):
+    """Search Pouet for a scener and return profile URLs."""
+    try:
+        search_url = f"https://www.pouet.net/search.php?what=sceners&q={requests.utils.quote(query)}"
+        resp = requests.get(search_url, timeout=10, headers=HTTP_HEADERS)
+        resp.raise_for_status()
+        html = resp.text
+
+        # Find user profile links: user.php?who=XXXX
+        matches = re.findall(r'href="(user\.php\?who=\d+)"[^>]*>(.*?)</a>', html, re.DOTALL)
+        urls = []
+        for path, link_text in matches:
+            name = re.sub(r'<[^>]+>', '', link_text).strip()
+            url = f"https://www.pouet.net/{path}"
+            if name.lower() == query.lower():
+                urls.insert(0, url)
+            elif len(urls) < 2:
+                urls.append(url)
+        return list(dict.fromkeys(urls))[:1]
+    except Exception:
+        return []
+
+
+def research_and_create(handle):
+    """Search CSDB/Pouet for a handle, scrape found profiles, generate post.
+
+    Returns same dict as create_post_from_sources().
+    """
+    # Search all sources
+    found_urls = []
+    search_info = []
+
+    csdb_urls = search_csdb(handle)
+    if csdb_urls:
+        found_urls.extend(csdb_urls)
+        search_info.append(f"CSDB: {len(csdb_urls)} profile(s)")
+
+    pouet_urls = search_pouet(handle)
+    if pouet_urls:
+        found_urls.extend(pouet_urls)
+        search_info.append(f"Pouet: {len(pouet_urls)} profile(s)")
+
+    if not found_urls:
+        # Fallback: try C64GFX
+        c64gfx_url = f"https://www.c64gfx.com/artist/{requests.utils.quote(handle.lower().replace(' ', '-'))}"
+        try:
+            resp = requests.head(c64gfx_url, timeout=5, headers=HTTP_HEADERS, allow_redirects=True)
+            if resp.status_code == 200:
+                found_urls.append(c64gfx_url)
+                search_info.append("C64GFX: 1 profile")
+        except Exception:
+            pass
+
+    if not found_urls:
+        raise ValueError(f"No profiles found for '{handle}' on CSDB, Pouet, or C64GFX. Try pasting a direct URL instead.")
+
+    # Use existing pipeline
+    result = create_post_from_sources(found_urls)
+    result["search_info"] = f"Searched for '{handle}' → found: {', '.join(search_info)}"
+    result["found_urls"] = found_urls
+    return result
+
+
 # ── Post Generation ───────────────────────────────────────────
 
 

@@ -179,6 +179,80 @@ function aiCreatePost() {
     });
 }
 
+// ── AI Research & Create ────────────────────────────────────
+
+function aiResearchCreate() {
+    const btn = document.getElementById('researchCreateBtn');
+    if (!btn || btn.classList.contains('loading')) return;
+
+    const rawInput = document.getElementById('aiSourceUrl').value.trim();
+    if (!rawInput) {
+        showNotification('Type a scene handle or name to search for', 'error');
+        return;
+    }
+
+    // Use the first line as the handle
+    const handle = rawInput.split('\n')[0].trim();
+
+    btn.classList.add('loading');
+
+    const statusArea = document.getElementById('aiStatus');
+    const statusBody = document.getElementById('aiStatusBody');
+    if (statusArea) statusArea.style.display = 'block';
+    if (statusBody) statusBody.innerHTML = '<span class="ai-progress">Searching CSDB, Pouet for "' + handle + '"...</span>';
+
+    fetch('/ai/research-create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ handle: handle })
+    })
+    .then(r => r.json())
+    .then(data => {
+        btn.classList.remove('loading');
+        if (data.ok) {
+            if (data.content) {
+                setEditorContent(data.content);
+            }
+            if (data.title) {
+                document.getElementById('postTitle').value = data.title;
+            }
+            if (data.tags && data.tags.length) {
+                document.getElementById('postTags').value = data.tags.join(', ');
+            }
+            if (data.real_name) {
+                var rnEl = document.getElementById('postRealName');
+                if (rnEl) rnEl.value = data.real_name;
+            }
+
+            if (statusBody) {
+                let statusHtml = '<span class="ai-status-success">Post generated!</span>';
+                if (data.search_info) {
+                    statusHtml += '<span class="ai-status-info"> ' + data.search_info + '</span>';
+                }
+                if (data.found_urls) {
+                    statusHtml += '<br><span class="ai-status-hint">Sources: ' + data.found_urls.join(', ') + '</span>';
+                }
+                statusHtml += '<br><span class="ai-status-hint">Edit the content above, then save when ready.</span>';
+                statusBody.innerHTML = statusHtml;
+            }
+
+            showNotification('Memorial post created from research!', 'success');
+        } else {
+            showNotification(data.error || 'Research failed', 'error');
+            if (statusBody) {
+                statusBody.innerHTML = '<span class="ai-status-error">' + (data.error || 'Research failed') + '</span>';
+            }
+        }
+    })
+    .catch(err => {
+        btn.classList.remove('loading');
+        showNotification('Failed: ' + err.message, 'error');
+        if (statusBody) {
+            statusBody.innerHTML = '<span class="ai-status-error">Failed: ' + err.message + '</span>';
+        }
+    });
+}
+
 // ── AI Restyle Post ─────────────────────────────────────────
 
 function aiRestylePost() {

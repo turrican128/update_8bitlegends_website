@@ -389,6 +389,27 @@ def ai_create_post():
         return jsonify({"ok": False, "error": str(e)}), 500
 
 
+@app.route("/ai/research-create", methods=["POST"])
+def ai_research_create():
+    """Search CSDB/Pouet for a handle and generate a memorial post."""
+    try:
+        from ai_generator import research_and_create
+    except ImportError as e:
+        return jsonify({"ok": False, "error": f"AI module not available: {e}"}), 500
+
+    data = request.get_json()
+    handle = data.get("handle", "").strip()
+
+    if not handle:
+        return jsonify({"ok": False, "error": "Type a scene handle or name to search for"}), 400
+
+    try:
+        result = research_and_create(handle)
+        return jsonify({"ok": True, **result})
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 500
+
+
 @app.route("/ai/restyle-post", methods=["POST"])
 def ai_restyle_post():
     """Restyle a fetched post to match the 8bit Legends dark cinematic theme."""

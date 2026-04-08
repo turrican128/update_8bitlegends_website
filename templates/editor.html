@@ -88,7 +88,7 @@
                 {% if status == 'fetched' %}
                 <textarea id="aiSourceUrl" rows="2" placeholder="Optional: paste additional source URLs for enrichment (CSDB, Pouet, C64GFX.com...)"></textarea>
                 {% else %}
-                <textarea id="aiSourceUrl" rows="2" placeholder="Paste one or more URLs (one per line)&#10;CSDB, Pouet, C64GFX.com, Facebook, or any webpage..."></textarea>
+                <textarea id="aiSourceUrl" rows="2" placeholder="Paste URLs (one per line) or type a scene handle for RESEARCH &amp; CREATE&#10;CSDB, Pouet, C64GFX.com, Facebook, or any webpage..."></textarea>
                 {% endif %}
             </div>
             <div class="ai-action-buttons">
@@ -97,8 +97,11 @@
                     &#10038; RESTYLE WITH AI
                 </button>
                 {% else %}
-                <button class="btn btn-ai" onclick="aiCreatePost()" id="createPostBtn" title="Scrape profile, research, and generate a full memorial post">
+                <button class="btn btn-ai" onclick="aiCreatePost()" id="createPostBtn" title="Paste URLs first, then click to scrape and generate a full memorial post">
                     &#10038; CREATE POST
+                </button>
+                <button class="btn btn-ai" onclick="aiResearchCreate()" id="researchCreateBtn" title="Type a scene handle — auto-searches CSDB, Pouet, C64GFX and generates post">
+                    &#128269; RESEARCH &amp; CREATE
                 </button>
                 {% endif %}
                 <button class="btn btn-ai-secondary" onclick="aiEnhance()" id="enhanceBtn" title="Select text in the editor, then click to enhance it">
