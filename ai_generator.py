@@ -11,7 +11,7 @@ import requests
 from urllib.parse import urlparse
 from anthropic import Anthropic
 from dotenv import load_dotenv
-from post_styles import POST_STYLES, get_template_html
+from post_styles import POST_STYLES, get_template_html, get_styles_for_preset, get_colors_for_preset, PRESET_DESCRIPTIONS
 
 load_dotenv()
 
@@ -451,8 +451,8 @@ Output ONLY the HTML content (the complete <section> wrapper + RIP div). No mark
     }
 
 
-def restyle_post(current_html, supplementary_sources=None, real_name="", title=""):
-    """Restyle a fetched WordPress post to match the 8bit Legends dark cinematic theme.
+def restyle_post(current_html, supplementary_sources=None, real_name="", title="", preset="default"):
+    """Restyle a fetched WordPress post to match a selected theme preset.
 
     Preserves all existing text, images, and links while restructuring into
     the styled template sections with proper inline CSS.
@@ -468,18 +468,22 @@ def restyle_post(current_html, supplementary_sources=None, real_name="", title="
     # Real name for RIP section
     rip_name = real_name if real_name else "extract the person's first/real name from the content"
 
-    template_html = get_template_html()
+    # Get preset-specific styles and template
+    styles = get_styles_for_preset(preset)
+    colors = get_colors_for_preset(preset)
+    template_html = get_template_html(preset)
+    preset_desc = PRESET_DESCRIPTIONS.get(preset, PRESET_DESCRIPTIONS["default"])
 
     # Build exact RIP HTML so Claude can copy-paste it
     rip_html = f"""
 <!-- RIP SECTION — MANDATORY, place after closing </section> -->
-<div style="{POST_STYLES['rip_section']}">
-  <h2 style="{POST_STYLES['rip_heading']}"><em>Rest in Peace<br>{rip_name}</em></h2>
-  <img src="https://amigac64.wordpress.com/wp-content/uploads/2015/04/flower6.png" style="width:85px;margin-top:1rem;opacity:0.9" alt="Flower tribute">
-  <p style="{POST_STYLES['rip_subtitle']}">{rip_name} · Forever in Our Memories</p>
+<div style="{styles['rip_section']}">
+  <h2 style="{styles['rip_heading']}"><em>Rest in Peace<br>{rip_name}</em></h2>
+  <img src="{colors['flower_url']}" style="width:85px;margin-top:1rem;opacity:0.9" alt="Flower tribute">
+  <p style="{styles['rip_subtitle']}">{rip_name} · Forever in Our Memories</p>
 </div>"""
 
-    prompt = f"""Restyle this existing memorial post to match the 8bit Legends dark cinematic theme.
+    prompt = f"""Restyle this existing memorial post using the "{preset_desc}" theme.
 
 EXISTING POST CONTENT (preserve ALL information, images, links, and text):
 

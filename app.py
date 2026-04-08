@@ -423,12 +423,13 @@ def ai_restyle_post():
     sources = data.get("sources", [])
     real_name = data.get("real_name", "")
     title = data.get("title", "")
+    preset = data.get("preset", "default")
 
     if not content:
         return jsonify({"ok": False, "error": "No content to restyle"}), 400
 
     try:
-        result = restyle_post(content, sources, real_name=real_name, title=title)
+        result = restyle_post(content, sources, real_name=real_name, title=title, preset=preset)
         return jsonify({"ok": True, **result})
     except Exception as e:
         return jsonify({"ok": False, "error": str(e)}), 500

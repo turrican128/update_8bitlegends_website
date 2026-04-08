@@ -91,7 +91,12 @@
                 <button class="btn btn-ai" onclick="aiResearchCreate()" id="researchCreateBtn" title="Type a scene handle — auto-searches CSDB, Pouet, C64GFX and generates post">
                     &#128269; RESEARCH &amp; CREATE
                 </button>
-                <button class="btn btn-ai" onclick="aiRestylePost()" id="restylePostBtn" title="Restyle current content to match the 8bit Legends dark cinematic theme">
+                <select id="restylePreset" class="restyle-preset-select">
+                    <option value="default">Dark Cinematic</option>
+                    <option value="c64">C64 Retro</option>
+                    <option value="amiga">Amiga Demo</option>
+                </select>
+                <button class="btn btn-ai" onclick="aiRestylePost()" id="restylePostBtn" title="Restyle current content using the selected theme preset">
                     &#10038; RESTYLE WITH AI
                 </button>
                 <button class="btn btn-ai-secondary" onclick="aiEnhance()" id="enhanceBtn" title="Select text in the editor, then click to enhance it">

@@ -272,18 +272,20 @@ function aiRestylePost() {
     // Get metadata from editor fields
     const realName = (document.getElementById('postRealName').value || '').trim();
     const title = (document.getElementById('postTitle').value || '').trim();
+    const preset = (document.getElementById('restylePreset') || {}).value || 'default';
+    const presetNames = { default: 'Dark Cinematic', c64: 'C64 Retro', amiga: 'Amiga Demo' };
 
     btn.classList.add('loading');
 
     const statusArea = document.getElementById('aiStatus');
     const statusBody = document.getElementById('aiStatusBody');
     if (statusArea) statusArea.style.display = 'block';
-    if (statusBody) statusBody.innerHTML = '<span class="ai-progress">Restyling post to match 8bit Legends dark cinematic theme...</span>';
+    if (statusBody) statusBody.innerHTML = '<span class="ai-progress">Restyling post with ' + (presetNames[preset] || preset) + ' theme...</span>';
 
     fetch('/ai/restyle-post', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content: content, sources: sources, real_name: realName, title: title })
+        body: JSON.stringify({ content: content, sources: sources, real_name: realName, title: title, preset: preset })
     })
     .then(r => r.json())
     .then(data => {

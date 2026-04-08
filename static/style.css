@@ -734,6 +734,22 @@ body {
     padding: 6px 14px;
 }
 
+.restyle-preset-select {
+    background: var(--bg-input);
+    border: 1px solid var(--green-dim);
+    color: var(--text-primary);
+    padding: 8px 10px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    min-width: 130px;
+    letter-spacing: 0.05em;
+}
+
+.restyle-preset-select:focus {
+    outline: none;
+    border-color: var(--green-mid);
+}
+
 .ai-action-buttons .btn,
 .ai-action-buttons .btn-ai,
 .ai-action-buttons .btn-ai-secondary {
