@@ -1,5 +1,38 @@
 # Change Log - 8bit Legends Memorial Editor
 
+## 2026-04-08 - Per-Post WP Fetch, Inline SVG Watermarks, Editor Fixes
+
+### Added
+- **Per-post FETCH WP button**: New button in editor toolbar (visible when post has `wp_post_id`) fetches the latest version of that single post from WordPress into the editor. Replaces the old bulk "SYNC WP" dashboard button which risked overwriting local edits.
+- **Inline SVG watermark elements**: C64 and Amiga presets now inject real SVG DOM elements (position:absolute, low opacity) scattered throughout the post as retro silhouettes:
+  - C64 preset (8 elements): breadbin+monitor, SID 6581 chip, datasette, joystick, 1541 floppy drive, PETSCII stars, power LED, floppy disk
+  - Amiga preset (9 elements): A500+monitor, RGB bars, Amiga checkmark, Boing ball, mouse, Guru Meditation box, copper gradient bars, mini Boing ball, floppy disk
+- **New endpoint**: `GET /fetch-wp/<post_id>` — fetches single post from WP REST API, returns title/tags/featured_image/body as JSON
+
+### Fixed
+- **TinyMCE stripping WordPress HTML**: Removed `extended_valid_elements` (was overriding `valid_elements:'*[*]'` and stripping `class` from elements). Added `verify_html:false`, `remove_trailing_brs:false`, `custom_elements:'figure,figcaption'`.
+- **setContent raw mode**: WP fetch uses `setContent(html, {format:'raw'})` to bypass TinyMCE's HTML parser — preserves all WP block classes, figures, and structure.
+- **WordPress background color classes**: Added CSS for all WP background classes found across the site: `has-pale-cyan-blue`, `has-cyan-bluish-gray`, `has-light-green-cyan`, `has-luminous-vivid-amber`, `has-pale-pink`, `has-vivid-green-cyan`, `has-white`, `has-blush-light-purple-gradient`. All get dark text (#222) and dark links (#1565c0).
+- **Tracking pixel images hidden**: 1x1 GIFs and tracking pixels (`display:none` in editor CSS).
+- **Image sizing**: Changed `width:100%` to `max-width:100%` so images respect natural dimensions.
+- **SVG watermarks (previously broken)**: Replaced failed CSS `background-image` data URI approach with real inline `<svg>` DOM elements — 100% reliable rendering.
+
+### Removed
+- Bulk "SYNC WP" button from dashboard (replaced by per-post fetch in editor)
+- Old `/sync` endpoint
+
+### Files Modified
+- `app.py` — New `/fetch-wp/<post_id>` endpoint, removed `/sync` endpoint
+- `post_styles.py` — `C64_WATERMARK_SVGS` and `AMIGA_WATERMARK_SVGS` inline SVG strings (replaced data URI approach)
+- `ai_generator.py` — SVG injection via DOM insertion instead of CSS background
+- `static/app.js` — `fetchFromWordPress()`, `setEditorContent()` raw mode support
+- `static/editor-content.css` — All WP background color classes, tracking pixel hiding, wp-block styles
+- `templates/editor.html` — FETCH WP button, TinyMCE config fixes (verify_html, custom_elements)
+- `templates/index.html` — Removed SYNC WP button
+- `templates/base.html` — Cache bust v11
+
+---
+
 ## 2026-04-08 - WordPress Block Styles in Editor
 
 ### Fixed
