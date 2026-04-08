@@ -600,37 +600,27 @@ def upload_image():
         os.unlink(tmp_path)
 
 
-@app.route("/sync", methods=["POST"])
-def sync_from_wordpress():
-    """Fetch all posts from WordPress to local posts/ directory."""
-    ensure_posts_dir()
-    client = WordPressClient()
-    posts = client.get_all_posts()
+@app.route("/fetch-wp/<int:post_id>", methods=["POST"])
+def fetch_from_wordpress(post_id):
+    """Fetch a single post from WordPress by ID and return its content for the editor."""
+    try:
+        client = WordPressClient()
+        post = client.get_post(post_id)
 
-    count = 0
-    skipped = 0
-    for post in posts:
-        date = post.get("date", "")[:10]
-        slug = post.get("slug", "untitled")
-        html_filename = f"{date}-{slug}.html"
-        md_filename = f"{date}-{slug}.md"
-        html_path = os.path.join(POSTS_DIR, html_filename)
-        md_path = os.path.join(POSTS_DIR, md_filename)
+        title = html_mod.unescape(post.get("title", ""))
+        tags = list(post.get("tags", {}).keys())
+        featured = post.get("featured_image", "")
+        content_html = post.get("content", "")
 
-        # Skip if already exists locally (don't overwrite local edits)
-        if os.path.exists(html_path) or os.path.exists(md_path):
-            skipped += 1
-            continue
-
-        local_content = client.post_to_local(post)
-        with open(html_path, "w", encoding="utf-8") as f:
-            f.write(local_content)
-        count += 1
-
-    msg = f"Synced {count} new posts from WordPress"
-    if skipped:
-        msg += f" ({skipped} already exist locally)"
-    return jsonify({"ok": True, "message": msg})
+        return jsonify({
+            "ok": True,
+            "title": title,
+            "tags": ", ".join(tags),
+            "featured_image": featured or "",
+            "body": content_html,
+        })
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 500
 
 
 @app.route("/delete/<filename>", methods=["POST"])

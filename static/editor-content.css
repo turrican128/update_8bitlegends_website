@@ -96,11 +96,19 @@ a:hover {
 /* Images — glow shadow */
 img {
   display: block;
-  width: 100%;
+  max-width: 100%;
   height: auto;
   border-radius: 10px;
   margin: 15px 0;
   box-shadow: 0 10px 22px rgba(0,0,0,0.8), 0 0 8px rgba(180,220,255,0.35);
+}
+
+/* Hide tracking pixels and tiny placeholder images */
+img[src*="1x1.gif"],
+img[src*="pixel"],
+img[width="1"],
+img[height="1"] {
+  display: none;
 }
 
 /* Image captions */
@@ -187,17 +195,126 @@ div[style*="rgba(38,41,56"] {
   margin-bottom: 1rem;
 }
 
+/* WordPress background color classes — light backgrounds need dark text */
 .has-pale-ocean-gradient-background {
   background: linear-gradient(135deg, #e0f7fa 0%, #e8eaf6 50%, #f3e5f5 100%);
+}
+
+.has-blush-light-purple-gradient-background {
+  background: linear-gradient(135deg, #fcbbbb 0%, #c6b3e3 50%, #c2e0f4 100%);
+}
+
+.has-pale-cyan-blue-background-color,
+.has-pale-cyan-blue-background {
+  background: #8ed1fc;
+}
+
+.has-cyan-bluish-gray-background-color,
+.has-cyan-bluish-gray-background {
+  background: #abb8c3;
+}
+
+.has-light-green-cyan-background-color,
+.has-light-green-cyan-background {
+  background: #7bdcb5;
+}
+
+.has-luminous-vivid-amber-background-color,
+.has-luminous-vivid-amber-background {
+  background: #fcb900;
+}
+
+.has-pale-pink-background-color,
+.has-pale-pink-background {
+  background: #f78da7;
+}
+
+.has-vivid-green-cyan-background-color,
+.has-vivid-green-cyan-background {
+  background: #00d084;
+}
+
+.has-white-background-color,
+.has-white-background {
+  background: #ffffff;
+}
+
+/* All light-background WP blocks need dark text and links */
+.has-pale-ocean-gradient-background,
+.has-blush-light-purple-gradient-background,
+.has-pale-cyan-blue-background-color,
+.has-pale-cyan-blue-background,
+.has-cyan-bluish-gray-background-color,
+.has-cyan-bluish-gray-background,
+.has-light-green-cyan-background-color,
+.has-light-green-cyan-background,
+.has-luminous-vivid-amber-background-color,
+.has-luminous-vivid-amber-background,
+.has-pale-pink-background-color,
+.has-pale-pink-background,
+.has-vivid-green-cyan-background-color,
+.has-vivid-green-cyan-background,
+.has-white-background-color,
+.has-white-background {
   color: #222;
 }
 
-.has-pale-ocean-gradient-background a {
+.has-pale-ocean-gradient-background a,
+.has-blush-light-purple-gradient-background a,
+.has-pale-cyan-blue-background-color a,
+.has-pale-cyan-blue-background a,
+.has-cyan-bluish-gray-background-color a,
+.has-cyan-bluish-gray-background a,
+.has-light-green-cyan-background-color a,
+.has-light-green-cyan-background a,
+.has-luminous-vivid-amber-background-color a,
+.has-luminous-vivid-amber-background a,
+.has-pale-pink-background-color a,
+.has-pale-pink-background a,
+.has-vivid-green-cyan-background-color a,
+.has-vivid-green-cyan-background a,
+.has-white-background-color a,
+.has-white-background a {
   color: #1565c0;
+}
+
+.has-pale-ocean-gradient-background p,
+.has-blush-light-purple-gradient-background p,
+.has-pale-cyan-blue-background-color p,
+.has-pale-cyan-blue-background p,
+.has-cyan-bluish-gray-background-color p,
+.has-cyan-bluish-gray-background p,
+.has-light-green-cyan-background-color p,
+.has-light-green-cyan-background p,
+.has-luminous-vivid-amber-background-color p,
+.has-luminous-vivid-amber-background p,
+.has-pale-pink-background-color p,
+.has-pale-pink-background p,
+.has-vivid-green-cyan-background-color p,
+.has-vivid-green-cyan-background p,
+.has-white-background-color p,
+.has-white-background p,
+p.has-pale-cyan-blue-background-color,
+p.has-pale-cyan-blue-background,
+p.has-cyan-bluish-gray-background-color,
+p.has-light-green-cyan-background-color,
+p.has-luminous-vivid-amber-background-color,
+p.has-pale-pink-background-color,
+p.has-vivid-green-cyan-background-color,
+p.has-white-background-color {
+  color: #222;
 }
 
 .has-medium-font-size {
   font-size: 1.1rem;
+}
+
+.has-large-font-size {
+  font-size: 1.6rem;
+}
+
+.has-small-font-size {
+  font-size: 0.85rem;
 }
 
 .wp-block-columns {
@@ -212,6 +329,31 @@ div[style*="rgba(38,41,56"] {
 
 .wp-block-heading {
   color: inherit;
+}
+
+.wp-block-image {
+  margin: 1rem 0;
+}
+
+.wp-block-image figure,
+figure.wp-block-image {
+  margin: 1rem 0;
+}
+
+.wp-block-image img,
+figure.wp-block-image img {
+  max-width: 100%;
+  height: auto;
+}
+
+.wp-block-paragraph {
+  margin-bottom: 1rem;
+}
+
+.aligncenter {
+  text-align: center;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 /* Horizontal rule */

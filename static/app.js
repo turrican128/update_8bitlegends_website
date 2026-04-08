@@ -13,10 +13,15 @@ function getEditorContent() {
     return el ? el.value : '';
 }
 
-function setEditorContent(html) {
+function setEditorContent(html, raw) {
     if (window.tinyEditor) {
         window.tinyEditor.undoManager.add();   // snapshot current state for Ctrl+Z
-        window.tinyEditor.setContent(html);
+        if (raw) {
+            // Bypass TinyMCE's HTML parser — preserves WP classes and structure
+            window.tinyEditor.setContent(html, {format: 'raw'});
+        } else {
+            window.tinyEditor.setContent(html);
+        }
         window.tinyEditor.undoManager.add();   // snapshot new state
     }
 }
@@ -430,28 +435,39 @@ document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') closeModal();
 });
 
-// ── Sync from WordPress ──────────────────────────────────────
+// ── Fetch single post from WordPress ─────────────────────────
 
-function syncFromWordPress() {
-    const btn = document.getElementById('syncBtn');
-    if (!btn || btn.classList.contains('loading')) return;
+function fetchFromWordPress() {
+    const btn = document.getElementById('fetchWpBtn');
+    const wpId = document.getElementById('wpPostId')?.value;
+    if (!btn || !wpId) return;
+    if (btn.classList.contains('loading')) return;
+
+    if (!confirm('Fetch the latest version from WordPress? Your unsaved editor changes will be replaced (Ctrl+Z to undo).')) return;
 
     btn.classList.add('loading');
+    btn.textContent = 'FETCHING...';
 
-    fetch('/sync', { method: 'POST' })
+    fetch('/fetch-wp/' + wpId, { method: 'POST' })
     .then(r => r.json())
     .then(data => {
         btn.classList.remove('loading');
+        btn.innerHTML = '<span class="btn-icon">&darr;</span> FETCH WP';
         if (data.ok) {
-            showNotification(data.message, 'success');
-            setTimeout(() => location.reload(), 1000);
+            // Update editor fields with fetched data
+            document.getElementById('postTitle').value = data.title || '';
+            document.getElementById('postTags').value = data.tags || '';
+            document.getElementById('postImage').value = data.featured_image || '';
+            setEditorContent(data.body || '', true);
+            showNotification('Fetched latest from WordPress — review and save when ready', 'success');
         } else {
-            showNotification(data.error || 'Sync failed', 'error');
+            showNotification(data.error || 'Fetch failed', 'error');
         }
     })
     .catch(err => {
         btn.classList.remove('loading');
-        showNotification('Sync failed: ' + err.message, 'error');
+        btn.innerHTML = '<span class="btn-icon">&darr;</span> FETCH WP';
+        showNotification('Fetch failed: ' + err.message, 'error');
     });
 }
 

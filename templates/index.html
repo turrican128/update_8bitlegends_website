@@ -9,9 +9,6 @@
             <a href="{{ url_for('new_post') }}" class="btn btn-primary">
                 <span class="btn-icon">+</span> NEW POST
             </a>
-            <button class="btn btn-secondary" id="syncBtn" onclick="syncFromWordPress()">
-                <span class="btn-icon">&darr;</span> SYNC WP
-            </button>
         </div>
     </div>
 
@@ -34,7 +31,7 @@
     <div class="empty-state">
         <div class="empty-icon">&#9617;&#9618;&#9619;&#9608;</div>
         <p>NO POSTS FOUND</p>
-        <p class="empty-hint">Create a new post or sync from WordPress to get started.</p>
+        <p class="empty-hint">Create a new post to get started.</p>
     </div>
     {% else %}
     <div class="posts-grid">

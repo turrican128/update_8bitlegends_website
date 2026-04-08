@@ -14,6 +14,11 @@
             <a href="{{ url_for('preview_post', filename=filename) }}" class="btn btn-secondary" target="_blank">
                 PREVIEW
             </a>
+            {% if wp_post_id %}
+            <button class="btn btn-secondary" id="fetchWpBtn" onclick="fetchFromWordPress()">
+                <span class="btn-icon">&darr;</span> FETCH WP
+            </button>
+            {% endif %}
             <button class="btn btn-accent" onclick="publishFromEditor()">
                 {% if wp_post_id %}UPDATE{% else %}DEPLOY{% endif %}
             </button>
@@ -160,7 +165,7 @@
         selector: '#htmlEditor',
         plugins: 'lists link image media code fullscreen wordcount searchreplace autosave',
         toolbar: 'undo redo | blocks bold italic underline | bullist numlist | link image media | blockquote hr | searchreplace code fullscreen',
-        content_css: '{{ url_for("static", filename="editor-content.css") }}?v=5',
+        content_css: '{{ url_for("static", filename="editor-content.css") }}?v=8',
         skin: 'oxide-dark',
         content_css_cors: true,
         height: 520,
@@ -170,7 +175,10 @@
         promotion: false,
         placeholder: 'Start writing your memorial post here...',
         valid_elements: '*[*]',
-        extended_valid_elements: 'span[style],div[style],p[style],h1[style],h2[style],a[style|href|target],img[style|src|alt|width|height]',
+        valid_classes: '*',
+        verify_html: false,
+        remove_trailing_brs: false,
+        custom_elements: 'figure,figcaption',
         paste_as_text: false,
         autosave_interval: '30s',
         autosave_restore_when_empty: true,

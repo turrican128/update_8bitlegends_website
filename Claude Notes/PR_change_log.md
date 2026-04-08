@@ -1,5 +1,59 @@
 # Change Log - 8bit Legends Memorial Editor
 
+## 2026-04-08 - WordPress Block Styles in Editor
+
+### Fixed
+- **WordPress block styles rendering**: Synced posts with light-background sections (e.g. `background:#f4f4f4; color:#222`) had invisible/washed-out text because editor CSS forced light text colors globally. Added `color: inherit` rules for light-bg containers so child elements (p, strong, h2, a, blockquote) respect the parent's dark text color.
+- **WordPress block class support**: Added CSS for `has-pale-ocean-gradient-background`, `has-background`, `has-medium-font-size`, `wp-block-columns`, `wp-block-column`, `wp-block-heading` so fetched WP content renders correctly in TinyMCE.
+
+### Files Modified
+- `static/editor-content.css` - Light-bg inherit rules, WordPress block class styles
+- `templates/base.html` - Cache bust v4
+- `templates/editor.html` - Cache bust v4 for TinyMCE content_css
+
+---
+
+## 2026-04-08 - WordPress Sync Fix (HTML Preservation)
+
+### Fixed
+- **Sync preserves HTML**: `post_to_local()` (renamed from `post_to_markdown()`) now keeps original WordPress HTML content instead of stripping to plain text via `html_to_text()`.
+- **Sync tracks post IDs**: Synced posts now include `wp_post_id`, `status: fetched`, `format: html`, and `real_name:` in frontmatter — matching editor-created posts.
+- **Sync saves as `.html`**: New synced files use `.html` extension instead of `.md`.
+- **Sync skips existing files**: Won't overwrite local edits during re-sync.
+
+### Files Modified
+- `wp_client.py` - `post_to_local()` preserves HTML, editor-compatible frontmatter
+- `app.py` - `sync_from_wordpress()` uses `.html`, skips existing files
+
+---
+
+## 2026-04-08 - Logo Generator, AI Chat, Deploy Updates
+
+### Added
+- **Demoscene Handle Logo Generator**: Renders handles using logo-o-matic spritesheet fonts (25 C64/Amiga fonts). Font picker dropdown, size slider (20-100%), preview and insert-into-post. Server-side rendering with Pillow from PNG spritesheets + JSON coordinate mappings.
+- **AI Chat Assistant**: Free-form text input below editor where user types instructions (e.g. "add more images", "expand the biography") and AI modifies post content directly in TinyMCE.
+- **Real Name field**: New metadata field for person's real name, used in RIP section generation.
+- **Deploy update support**: Posts with `wp_post_id` use `wp.editPost` instead of `wp.newPost` — no more duplicates. Button text changes to "UPDATE" / "UPDATE LIVE" for already-published posts.
+- **Logo upload to WordPress**: Logos are uploaded as media files via XML-RPC instead of base64 data URIs (which WordPress strips).
+
+### Fixed
+- **XML-RPC parse errors**: HTML entities (`&middot;`, `&ndash;`) broke XML-RPC encoding. Fixed by `html.unescape()` before sending.
+- **Local status not updating after publish**: Publish route now updates frontmatter `status` in local file.
+- **AI Chat div ID shadowing**: `<div id="aiChat">` shadowed the `aiChat()` JS function. Renamed to `aiChatPanel`.
+
+### Files Modified
+- `logo_generator.py` (new) - Spritesheet font renderer
+- `fonts/fonts.json` (new) - Character coordinate data for 164 fonts
+- `fonts/spritesheets/*.png` (new) - 25 font spritesheets
+- `app.py` - Logo routes, AI chat route, deploy update logic, real_name support
+- `ai_generator.py` - Logo integration, `chat_modify_post()`, real_name extraction
+- `templates/editor.html` - Logo bar, AI chat panel, real name field, deploy/update UI
+- `static/app.js` - Logo functions, AI chat, save/publish updates
+- `static/style.css` - Logo bar, AI chat, real name field styles
+- `templates/base.html` - Cache bust v3
+
+---
+
 ## 2026-04-07 - CSDB Image Extraction + RIP Flower Section
 
 ### Added
