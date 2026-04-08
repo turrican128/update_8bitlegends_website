@@ -295,7 +295,15 @@ def research_and_create(handle):
 
     Returns same dict as create_post_from_sources().
     """
-    # Search all sources
+    # If input is already a URL, scrape it directly — don't search
+    if handle.startswith("http"):
+        urls = [u.strip() for u in handle.split('\n') if u.strip()]
+        result = create_post_from_sources(urls)
+        result["search_info"] = f"Scraped {len(urls)} URL(s) directly"
+        result["found_urls"] = urls
+        return result
+
+    # Search all sources by handle name
     found_urls = []
     search_info = []
 

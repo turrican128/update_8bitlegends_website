@@ -191,8 +191,8 @@ function aiResearchCreate() {
         return;
     }
 
-    // Use the first line as the handle
-    const handle = rawInput.split('\n')[0].trim();
+    // Send full input — backend detects URLs vs handle names
+    const handle = rawInput;
 
     btn.classList.add('loading');
 
