@@ -366,10 +366,19 @@ def restyle_post(current_html, supplementary_sources=None, real_name="", title="
             all_data.append(data)
         extra_info += f"\n\nAdditional information from supplementary sources:\n{_format_all_sources(all_data)}"
 
-    # Real name for RIP section — always include this block so Claude never skips it
+    # Real name for RIP section
     rip_name = real_name if real_name else "extract the person's first/real name from the content"
 
     template_html = get_template_html()
+
+    # Build exact RIP HTML so Claude can copy-paste it
+    rip_html = f"""
+<!-- RIP SECTION — MANDATORY, place after closing </section> -->
+<div style="{POST_STYLES['rip_section']}">
+  <h2 style="{POST_STYLES['rip_heading']}"><em>Rest in Peace<br>{rip_name}</em></h2>
+  <img src="https://amigac64.wordpress.com/wp-content/uploads/2015/04/flower6.png" style="width:85px;margin-top:1rem;opacity:0.9" alt="Flower tribute">
+  <p style="{POST_STYLES['rip_subtitle']}">{rip_name} · Forever in Our Memories</p>
+</div>"""
 
     prompt = f"""Restyle this existing memorial post to match the 8bit Legends dark cinematic theme.
 
@@ -393,20 +402,25 @@ INSTRUCTIONS:
 - Create milestones from chronological facts in the original
 - Create works cards from any demos/releases/games mentioned
 - If information for a non-essential section (quote, milestones, works) isn't available, you may omit it
-- The RIP section is MANDATORY — NEVER omit it. It goes OUTSIDE the main <section> wrapper as a separate <div>
-- The RIP section MUST include "Rest in Peace {rip_name}" with the flower image
-- Use the flower image URL: https://amigac64.wordpress.com/wp-content/uploads/2015/04/flower6.png
+
+CRITICAL — The output MUST end with this exact RIP section after the closing </section> tag:
+{rip_html}
 
 Output ONLY the complete HTML (the <section> wrapper + RIP div). No markdown, no explanation."""
 
     message = client.messages.create(
         model="claude-sonnet-4-20250514",
-        max_tokens=4000,
+        max_tokens=8000,
         system=SYSTEM_PROMPT,
         messages=[{"role": "user", "content": prompt}]
     )
 
     content = message.content[0].text
+
+    # Safety net: if AI still omitted the RIP section, append it
+    if "Rest in Peace" not in content and "rest in peace" not in content.lower():
+        content += rip_html
+
     title = _extract_title(content, [])
 
     return {
