@@ -85,25 +85,15 @@
                 <span class="ai-icon">&#9679;</span> AI
             </div>
             <div class="ai-url-input">
-                {% if status == 'fetched' %}
-                <textarea id="aiSourceUrl" rows="2" placeholder="Optional: paste additional source URLs for enrichment (CSDB, Pouet, C64GFX.com...)"></textarea>
-                {% else %}
-                <textarea id="aiSourceUrl" rows="2" placeholder="Paste URLs (one per line) or type a scene handle for RESEARCH &amp; CREATE&#10;CSDB, Pouet, C64GFX.com, Facebook, or any webpage..."></textarea>
-                {% endif %}
+                <textarea id="aiSourceUrl" rows="2" placeholder="Type a scene handle to research, or paste URLs for enrichment..."></textarea>
             </div>
             <div class="ai-action-buttons">
-                {% if status == 'fetched' %}
-                <button class="btn btn-ai" onclick="aiRestylePost()" id="restylePostBtn" title="Restyle this post to match the 8bit Legends dark cinematic theme">
-                    &#10038; RESTYLE WITH AI
-                </button>
-                {% else %}
-                <button class="btn btn-ai" onclick="aiCreatePost()" id="createPostBtn" title="Paste URLs first, then click to scrape and generate a full memorial post">
-                    &#10038; CREATE POST
-                </button>
                 <button class="btn btn-ai" onclick="aiResearchCreate()" id="researchCreateBtn" title="Type a scene handle — auto-searches CSDB, Pouet, C64GFX and generates post">
                     &#128269; RESEARCH &amp; CREATE
                 </button>
-                {% endif %}
+                <button class="btn btn-ai" onclick="aiRestylePost()" id="restylePostBtn" title="Restyle current content to match the 8bit Legends dark cinematic theme">
+                    &#10038; RESTYLE WITH AI
+                </button>
                 <button class="btn btn-ai-secondary" onclick="aiEnhance()" id="enhanceBtn" title="Select text in the editor, then click to enhance it">
                     &#9998; ENHANCE SELECTION
                 </button>
