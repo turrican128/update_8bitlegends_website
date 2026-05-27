@@ -4,6 +4,7 @@
 import os
 import re
 import json
+import base64
 import html as html_mod
 import tempfile
 from datetime import datetime
@@ -111,6 +112,47 @@ def get_all_local_posts():
             "wp_post_id": meta.get("wp_post_id", ""),
         })
     return posts
+
+
+def upload_inline_images(content_html, client):
+    """Replace inline base64 data-URI images with uploaded WordPress media URLs.
+
+    WordPress sanitises post content on save and strips the `data:` scheme from
+    img src (KSES), turning `src="data:image/png;base64,…"` into the invalid
+    `src="image/png;base64,…"` — a broken image on the live site. The fix is to
+    upload each inline image as media and reference it by URL (like the C64-style
+    handle logos that are otherwise embedded as base64). On any per-image failure
+    the original tag is left untouched so a publish is never blocked."""
+    ext_by_subtype = {"png": ".png", "jpeg": ".jpg", "jpg": ".jpg",
+                      "gif": ".gif", "webp": ".webp"}
+    seen = {}  # data-uri -> uploaded media url (dedupe identical images)
+
+    def _replace(m):
+        data_uri, subtype, b64 = m.group(1), m.group(2).lower(), m.group(3)
+        if data_uri in seen:
+            return f'src="{seen[data_uri]}"'
+        try:
+            raw = base64.b64decode(b64)
+        except Exception:
+            return m.group(0)
+        tmp_path = None
+        try:
+            with tempfile.NamedTemporaryFile(delete=False, suffix=ext_by_subtype.get(subtype, ".png")) as tmp:
+                tmp.write(raw)
+                tmp_path = tmp.name
+            url = client.upload_image(tmp_path).get("url")
+        except Exception as e:
+            print(f"[WARN] inline image upload failed: {type(e).__name__}: {e}")
+            return m.group(0)
+        finally:
+            if tmp_path and os.path.exists(tmp_path):
+                os.unlink(tmp_path)
+        if not url:
+            return m.group(0)
+        seen[data_uri] = url
+        return f'src="{url}"'
+
+    return re.sub(r'src="(data:image/([A-Za-z]+);base64,([^"]+))"', _replace, content_html)
 
 
 def convert_md_to_html(md_body):
@@ -319,6 +361,10 @@ def publish_post(filename):
     content_html = re.sub(r'[\x00-\x08\x0b\x0c\x0e-\x1f]', '', content_html)
 
     client = WordPressClient()
+
+    # Inline base64 images get their `data:` scheme stripped by WordPress on
+    # save (breaking them). Upload them as media and swap in the URLs first.
+    content_html = upload_inline_images(content_html, client)
 
     featured_image_id = None
     if featured_image_path and os.path.isfile(featured_image_path):
