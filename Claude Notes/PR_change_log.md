@@ -1,5 +1,38 @@
 # Change Log - 8bit Legends Memorial Editor
 
+## 2026-05-28 - App Launcher, Modals, Publish Robustness & Inline-Image Fix
+
+### Added
+- **One-command app launcher**: `python app.py` now auto-frees a stuck port (kills a stale process holding it), auto-opens the browser, and supports flags (`--port`, `--host`, `--no-browser`, `--keep-port`, `--no-debug`). UTF-8 stdout so arrows/emoji don't crash a cp1255 console. `launch.bat` added for double-click launching.
+- **Delete confirmation modal**: Deleting a post on the dashboard now opens a styled yes/no modal (was the browser `confirm()`). Matches the publish modal look.
+- **Unsaved-changes modal in editor**: Clicking POSTS / NEW / logo with unsaved edits opens a styled modal (Cancel / Save & Leave / Leave Without Saving) instead of TinyMCE's native browser "Leave site?" dialog. `savePost()` now returns `Promise<boolean>` so "Save & Leave" waits for the save to succeed.
+- **Duplicate-post guard**: `WordPressClient.find_post_id_by_title()` — when publishing a post with no local `wp_post_id`, the publish route looks up WordPress by exact title and *updates* the existing post instead of creating a duplicate (covers the case where a prior publish created the post but failed to write the id back locally).
+- **Inline image upload on publish**: `upload_inline_images()` uploads any inline base64 `data:` image to WordPress media and swaps in the URL before publishing.
+
+### Fixed
+- **Dead DEPLOY modal buttons (dashboard & preview)**: `publishPost()` never wired the SAVE AS DRAFT / PUBLISH LIVE buttons or recorded which post to publish, so publishing from a card did nothing. Now wired to the selected post.
+- **Broken images on the live site**: WordPress strips the `data:` scheme from img src on save (KSES), turning `data:image/png;base64,…` into the invalid `image/png;base64,…`. Inline base64 images (e.g. C64-style handle logos) now upload as media instead. Also repaired the already-broken "In Memory of TSN" post (uploaded its logo, relinked it).
+- **Invisible DELETE button**: `.btn-danger` was a near-invisible transparent `×`; now a clearly visible, labelled red button pushed to the card's right edge.
+- **TSN post local/WordPress mismatch**: Reconciled local frontmatter (`status: publish`, `wp_post_id: 70971`) after a publish write-back failure.
+
+### Changed
+- **UPDATE vs DEPLOY wording**: Dashboard cards and the publish/preview modals now say UPDATE ON WORDPRESS / UPDATE LIVE / UPDATE AS DRAFT for posts already on WordPress (have a `wp_post_id`), matching the editor; new posts still say DEPLOY / PUBLISH LIVE.
+- **POSTS nav link** hidden on the dashboard itself (redundant there); still shown on editor/preview.
+- Static cache-bust bumped v11 → v14.
+
+### Files Modified
+- `app.py` — launcher (`main()`/`_free_port()`/`_pids_on_port()`/`_port_in_use()`), `upload_inline_images()`, duplicate-guard in publish route, `wp_post_id` exposed in post list + preview route, UTF-8 stdout
+- `wp_client.py` — `find_post_id_by_title()`
+- `static/app.js` — delete-confirm modal, publish-button wiring + UPDATE/DEPLOY wording, `savePost()` returns a promise, generalized modal close handlers
+- `static/style.css` — visible DELETE button, card-action `flex-wrap`
+- `templates/index.html` — delete modal, DELETE label, UPDATE/DEPLOY button, publish modal title id
+- `templates/preview.html` — UPDATE/DEPLOY wording
+- `templates/editor.html` — unsaved-changes modal + leave-guard JS, `autosave_ask_before_unload: false`
+- `templates/base.html` — POSTS nav conditional, cache-bust v12→v14
+- `launch.bat` (new) — double-click launcher
+
+---
+
 ## 2026-04-08 - Per-Post WP Fetch, Inline SVG Watermarks, Editor Fixes
 
 ### Added
