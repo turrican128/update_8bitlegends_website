@@ -247,16 +247,16 @@ body {
 }
 
 .btn-danger {
-    background: transparent;
-    color: var(--text-muted);
-    border-color: transparent;
-    padding: 10px 10px;
+    background: rgba(255, 51, 68, 0.1);
+    color: var(--red);
+    border-color: var(--red-dim);
+    margin-left: auto;
 }
 
 .btn-danger:hover {
-    color: var(--red);
-    border-color: var(--red-dim);
-    background: rgba(255, 51, 68, 0.1);
+    color: var(--bg-deep);
+    border-color: var(--red);
+    background: var(--red);
 }
 
 .btn-sm {
@@ -466,6 +466,8 @@ body {
 
 .post-card-actions {
     display: flex;
+    flex-wrap: wrap;
+    align-items: center;
     gap: 6px;
     padding-top: 12px;
     border-top: 1px solid rgba(255,255,255,0.04);

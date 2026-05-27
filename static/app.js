@@ -365,11 +365,21 @@ function aiEnhance() {
 function publishPost(filename, status) {
     const modal = document.getElementById('publishModal');
     const resultEl = document.getElementById('publishResult');
+    const nameEl = document.getElementById('publishFilename');
 
+    if (nameEl) nameEl.textContent = filename;
     if (resultEl) {
         resultEl.style.display = 'none';
         resultEl.className = 'modal-result';
     }
+
+    // Wire the modal's two buttons to this specific post. (The dashboard and
+    // preview modals only have id'd buttons with no inline onclick, so they
+    // were previously dead — clicking did nothing.)
+    const draftBtn = document.getElementById('publishDraftBtn');
+    const liveBtn = document.getElementById('publishLiveBtn');
+    if (draftBtn) draftBtn.onclick = () => doPublishFromDashboard(filename, 'draft');
+    if (liveBtn) liveBtn.onclick = () => doPublishFromDashboard(filename, 'publish');
 
     modal.classList.add('active');
 }
@@ -423,16 +433,19 @@ function closeModal() {
     if (modal) modal.classList.remove('active');
 }
 
-// Close modal on backdrop click
+// Close modal on backdrop click — close whichever modal was clicked.
 document.addEventListener('click', function(e) {
     if (e.target.classList.contains('modal') && e.target.classList.contains('active')) {
-        closeModal();
+        e.target.classList.remove('active');
+        if (e.target.id === 'deleteModal') _pendingDeleteFilename = null;
     }
 });
 
-// Close modal on Escape
+// Close modal on Escape — close any open modal.
 document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') closeModal();
+    if (e.key !== 'Escape') return;
+    closeModal();
+    closeDeleteModal();
 });
 
 // ── Fetch single post from WordPress ─────────────────────────
@@ -473,8 +486,37 @@ function fetchFromWordPress() {
 
 // ── Delete Post ──────────────────────────────────────────────
 
+let _pendingDeleteFilename = null;
+
 function deletePost(filename) {
-    if (!confirm('Delete ' + filename + '? This cannot be undone.')) return;
+    _pendingDeleteFilename = filename;
+
+    // Prefer the post's title over the raw filename for the prompt.
+    let label = filename;
+    document.querySelectorAll('.post-card').forEach(card => {
+        if (card.querySelector('a[href*="' + filename + '"]')) {
+            const t = card.querySelector('.post-card-title');
+            if (t && t.textContent.trim()) label = t.textContent.trim();
+        }
+    });
+
+    const targetEl = document.getElementById('deleteTarget');
+    if (targetEl) targetEl.textContent = label;
+
+    const modal = document.getElementById('deleteModal');
+    if (modal) modal.classList.add('active');
+}
+
+function closeDeleteModal() {
+    const modal = document.getElementById('deleteModal');
+    if (modal) modal.classList.remove('active');
+    _pendingDeleteFilename = null;
+}
+
+function confirmDelete() {
+    const filename = _pendingDeleteFilename;
+    closeDeleteModal();
+    if (!filename) return;
 
     fetch('/delete/' + encodeURIComponent(filename), { method: 'POST' })
     .then(r => r.json())

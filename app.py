@@ -20,6 +20,13 @@ from post_generator import generate_post, COMMON_TAGS, COMMON_GROUPS
 
 load_dotenv()
 
+# UTF-8 stdout/stderr so log lines with non-cp1252/cp1255 characters (arrows,
+# emoji, scener handles) don't crash the Windows console.
+import sys as _sys
+for _stream in (_sys.stdout, _sys.stderr):
+    if hasattr(_stream, "reconfigure"):
+        _stream.reconfigure(encoding="utf-8", errors="replace")
+
 app = Flask(__name__)
 app.secret_key = os.getenv("FLASK_SECRET", "8bit-legends-dev-key")
 
@@ -633,8 +640,115 @@ def delete_post(filename):
     return jsonify({"ok": False, "error": "File not found"}), 404
 
 
-if __name__ == "__main__":
+# ── One-command launcher ───────────────────────────────────────
+# Mirrors the daily-rss-news-to-whatsapp launcher: free a stuck port left
+# behind by a previous crashed run, then auto-open the browser. The recurring
+# pain was a stale Flask/debug-reloader process holding :5000 so a fresh
+# `python app.py` couldn't bind and the web app appeared dead.
+
+DEFAULT_HOST = "127.0.0.1"
+DEFAULT_PORT = 5000
+
+
+def _port_in_use(host, port):
+    import socket
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.settimeout(0.5)
+        return s.connect_ex((host, port)) == 0
+
+
+def _pids_on_port(port):
+    """Best-effort: PIDs LISTENING on `port`. Empty on failure (non-fatal)."""
+    import subprocess
+    import sys
+    pids = set()
+    try:
+        if sys.platform == "win32":
+            out = subprocess.run(
+                ["netstat", "-ano", "-p", "TCP"],
+                capture_output=True, text=True, timeout=10,
+            ).stdout
+            for line in out.splitlines():
+                parts = line.split()
+                if len(parts) >= 5 and parts[-1].isdigit() and "LISTENING" in line:
+                    if parts[1].endswith(f":{port}"):
+                        pids.add(int(parts[-1]))
+        else:
+            out = subprocess.run(
+                ["lsof", "-ti", f"tcp:{port}", "-sTCP:LISTEN"],
+                capture_output=True, text=True, timeout=10,
+            ).stdout
+            pids.update(int(p) for p in out.split() if p.strip().isdigit())
+    except Exception as e:
+        print(f"[WARN] couldn't inspect port {port}: {type(e).__name__}: {e}")
+    return sorted(pids)
+
+
+def _free_port(host, port):
+    """Kill whatever is LISTENING on `port` so the launcher can bind it."""
+    import os
+    import subprocess
+    import sys
+    if not _port_in_use(host, port):
+        return
+    pids = _pids_on_port(port)
+    if not pids:
+        print(f"[WARN] port {port} is busy but I couldn't find the owner — "
+              f"start may fail. Use --port to pick another.")
+        return
+    own = os.getpid()
+    for pid in pids:
+        if pid in (0, own):
+            continue
+        print(f"[INFO] freeing port {port}: stopping pid {pid}")
+        try:
+            if sys.platform == "win32":
+                subprocess.run(["taskkill", "/F", "/PID", str(pid)],
+                               capture_output=True, timeout=10)
+            else:
+                os.kill(pid, 9)
+        except Exception as e:
+            print(f"[WARN] couldn't stop pid {pid}: {type(e).__name__}: {e}")
+
+
+def main():
+    import argparse
+    import os
+    import threading
+    import webbrowser
+
+    parser = argparse.ArgumentParser(description="Launch the 8bit Legends Web Editor.")
+    parser.add_argument("--host", default=DEFAULT_HOST)
+    parser.add_argument("--port", type=int, default=DEFAULT_PORT)
+    parser.add_argument("--no-browser", action="store_true",
+                        help="don't auto-open the browser")
+    parser.add_argument("--keep-port", action="store_true",
+                        help="don't free the port if it's already in use")
+    parser.add_argument("--no-debug", action="store_true",
+                        help="disable Flask debug/auto-reload")
+    args = parser.parse_args()
+
     ensure_posts_dir()
-    print("Starting 8bit Legends Web Editor v2.0...")
-    print("Open http://localhost:5000 in your browser")
-    app.run(debug=True, port=5000)
+
+    # Flask's debug reloader re-runs this file in a child process
+    # (WERKZEUG_RUN_MAIN=true). Only free the port and open the browser in the
+    # parent, so we don't kill our own child or open two tabs.
+    is_reloader_child = os.environ.get("WERKZEUG_RUN_MAIN") == "true"
+
+    if not is_reloader_child:
+        if not args.keep_port:
+            _free_port(args.host, args.port)
+
+        url = f"http://{args.host}:{args.port}"
+        print("Starting 8bit Legends Web Editor v2.0...")
+        print(f"[INFO] Web editor → {url}  (Ctrl+C to stop)")
+        if not args.no_browser:
+            # uvicorn/Flask blocks on run(); open the browser shortly after.
+            threading.Timer(1.5, lambda: webbrowser.open(url)).start()
+
+    app.run(debug=not args.no_debug, host=args.host, port=args.port)
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
