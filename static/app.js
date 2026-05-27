@@ -362,7 +362,7 @@ function aiEnhance() {
 
 // ── Publish ──────────────────────────────────────────────────
 
-function publishPost(filename, status) {
+function publishPost(filename, onWordPress) {
     const modal = document.getElementById('publishModal');
     const resultEl = document.getElementById('publishResult');
     const nameEl = document.getElementById('publishFilename');
@@ -373,13 +373,20 @@ function publishPost(filename, status) {
         resultEl.className = 'modal-result';
     }
 
-    // Wire the modal's two buttons to this specific post. (The dashboard and
-    // preview modals only have id'd buttons with no inline onclick, so they
-    // were previously dead — clicking did nothing.)
+    // A post already on WordPress (has a wp_post_id) is updated, not created —
+    // reflect that in the modal wording so it matches the editor page.
+    const titleEl = document.getElementById('publishModalTitle');
     const draftBtn = document.getElementById('publishDraftBtn');
     const liveBtn = document.getElementById('publishLiveBtn');
-    if (draftBtn) draftBtn.onclick = () => doPublishFromDashboard(filename, 'draft');
-    if (liveBtn) liveBtn.onclick = () => doPublishFromDashboard(filename, 'publish');
+    if (titleEl) titleEl.textContent = onWordPress ? 'UPDATE ON WORDPRESS' : 'DEPLOY TO WORDPRESS';
+    if (draftBtn) {
+        draftBtn.textContent = onWordPress ? 'UPDATE AS DRAFT' : 'SAVE AS DRAFT';
+        draftBtn.onclick = () => doPublishFromDashboard(filename, 'draft');
+    }
+    if (liveBtn) {
+        liveBtn.textContent = onWordPress ? 'UPDATE LIVE' : 'PUBLISH LIVE';
+        liveBtn.onclick = () => doPublishFromDashboard(filename, 'publish');
+    }
 
     modal.classList.add('active');
 }

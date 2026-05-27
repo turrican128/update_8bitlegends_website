@@ -6,8 +6,8 @@
     <div class="preview-toolbar">
         <a href="{{ url_for('edit_post', filename=filename) }}" class="btn btn-secondary">&larr; BACK TO EDITOR</a>
         <div class="preview-actions">
-            <button class="btn btn-primary" onclick="publishPost('{{ filename }}', 'draft')">DEPLOY AS DRAFT</button>
-            <button class="btn btn-accent" onclick="publishPost('{{ filename }}', 'publish')">PUBLISH LIVE</button>
+            <button class="btn btn-primary" onclick="publishPost('{{ filename }}', {{ 'true' if wp_post_id else 'false' }})">{{ 'UPDATE AS DRAFT' if wp_post_id else 'DEPLOY AS DRAFT' }}</button>
+            <button class="btn btn-accent" onclick="publishPost('{{ filename }}', {{ 'true' if wp_post_id else 'false' }})">{{ 'UPDATE LIVE' if wp_post_id else 'PUBLISH LIVE' }}</button>
         </div>
     </div>
 

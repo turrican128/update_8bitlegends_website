@@ -108,6 +108,7 @@ def get_all_local_posts():
             "format": meta.get("format", "markdown" if f.endswith(".md") else "html"),
             "date": f[:10] if len(f) >= 10 else "",
             "excerpt": excerpt,
+            "wp_post_id": meta.get("wp_post_id", ""),
         })
     return posts
 
@@ -281,6 +282,7 @@ def preview_post(filename):
         featured_image=meta.get("featured_image", ""),
         content_html=content_html,
         filename=filename,
+        wp_post_id=meta.get("wp_post_id", ""),
     )
 
 
@@ -338,15 +340,31 @@ def publish_post(filename):
         post_id = wp_post_id
         action = "Updated"
     else:
-        # Create new post
-        post_id = client.create_post(
-            title=title,
-            content_html=content_html,
-            tags=tags,
-            status=status,
-            featured_image_id=featured_image_id,
-        )
-        action = "Created"
+        # No local wp_post_id. Guard against duplicates: a prior publish may
+        # have created the post on WordPress but failed to write the id back
+        # locally (e.g. an XML-RPC timeout after creation). If a post with this
+        # exact title already exists, update it instead of creating a duplicate.
+        existing_id = client.find_post_id_by_title(title)
+        if existing_id:
+            client.update_post(
+                post_id=existing_id,
+                title=title,
+                content_html=content_html,
+                tags=tags,
+                status=status,
+                featured_image_id=featured_image_id,
+            )
+            post_id = existing_id
+            action = "Updated"
+        else:
+            post_id = client.create_post(
+                title=title,
+                content_html=content_html,
+                tags=tags,
+                status=status,
+                featured_image_id=featured_image_id,
+            )
+            action = "Created"
 
     admin_url = f"https://wordpress.com/post/{client.site}/{post_id}"
 

@@ -53,6 +53,32 @@ class WordPressClient:
         resp.raise_for_status()
         return resp.json()
 
+    def find_post_id_by_title(self, title):
+        """Return the ID of an existing post whose title exactly matches
+        `title` (case-insensitive), or None.
+
+        Duplicate guard: if a prior publish created the post on WordPress but
+        failed to record the id locally (e.g. an XML-RPC timeout after the post
+        was already created), publishing again would otherwise create a
+        duplicate. Note: the public API only surfaces published posts, so this
+        guards against duplicate *live* posts (the common case), not drafts."""
+        if not title:
+            return None
+        try:
+            resp = requests.get(
+                f"{self.api_base}/posts/",
+                params={"number": 20, "search": title, "fields": "ID,title"},
+                timeout=15,
+            )
+            resp.raise_for_status()
+        except Exception:
+            return None  # never block a publish on a flaky lookup
+        target = html.unescape(title).strip().casefold()
+        for p in resp.json().get("posts", []):
+            if html.unescape(p.get("title", "")).strip().casefold() == target:
+                return p.get("ID")
+        return None
+
     def get_categories(self):
         """Fetch all categories."""
         resp = requests.get(f"{self.api_base}/categories")
