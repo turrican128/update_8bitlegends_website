@@ -47,9 +47,12 @@ function replaceSelection(html) {
 
 // ── Save Post ────────────────────────────────────────────────
 
+// Returns a Promise<boolean> resolving to whether the save succeeded, so
+// callers like "Save & Leave" can act on the result. Callers that ignore the
+// return value keep working unchanged.
 function savePost() {
     const btn = document.getElementById('saveBtn');
-    if (!btn || btn.classList.contains('loading')) return;
+    if (!btn || btn.classList.contains('loading')) return Promise.resolve(false);
 
     const title = document.getElementById('postTitle').value.trim();
     const tags = document.getElementById('postTags').value.trim();
@@ -60,12 +63,12 @@ function savePost() {
 
     if (!title) {
         showNotification('Title is required', 'error');
-        return;
+        return Promise.resolve(false);
     }
 
     btn.classList.add('loading');
 
-    fetch('/save', {
+    return fetch('/save', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -83,13 +86,16 @@ function savePost() {
                 document.getElementById('postFilename').value = data.filename;
                 history.replaceState(null, '', '/edit/' + data.filename);
             }
-        } else {
-            showNotification(data.error || 'Save failed', 'error');
+            if (window.tinyEditor && window.tinyEditor.setDirty) window.tinyEditor.setDirty(false);
+            return true;
         }
+        showNotification(data.error || 'Save failed', 'error');
+        return false;
     })
     .catch(err => {
         btn.classList.remove('loading');
         showNotification('Save failed: ' + err.message, 'error');
+        return false;
     });
 }
 

@@ -156,6 +156,24 @@
         <div class="modal-result" id="publishResult"></div>
     </div>
 </div>
+
+<!-- Unsaved-changes (leave) modal -->
+<div class="modal" id="leaveModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>UNSAVED CHANGES</h3>
+            <button class="modal-close" onclick="closeLeaveModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p>You have unsaved changes. Leave this page anyway?</p>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="closeLeaveModal()">CANCEL</button>
+                <button class="btn btn-primary" onclick="saveThenLeave()">SAVE &amp; LEAVE</button>
+                <button class="btn btn-danger" onclick="leaveWithoutSaving()">LEAVE WITHOUT SAVING</button>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block scripts %}
@@ -182,6 +200,10 @@
         paste_as_text: false,
         autosave_interval: '30s',
         autosave_restore_when_empty: true,
+        // Disable the autosave plugin's native browser "unsaved changes"
+        // beforeunload dialog — we replace it with a styled modal on the
+        // POSTS / NEW / logo links below.
+        autosave_ask_before_unload: false,
         setup: function(editor) {
             // Ctrl+S to save
             editor.addShortcut('ctrl+s', 'Save post', function() {
@@ -202,6 +224,75 @@
             e.preventDefault();
             savePost();
         }
+    });
+
+    // ── Unsaved-changes guard (replaces the native beforeunload alert) ──
+    // Clicking POSTS / NEW / the logo while there are unsaved edits now opens
+    // a styled modal instead of the browser's native "Leave site?" dialog.
+    let _pendingLeaveUrl = null;
+    const _initialMeta = {
+        title: (document.getElementById('postTitle') || {}).value || '',
+        tags: (document.getElementById('postTags') || {}).value || '',
+    };
+
+    function editorIsDirty() {
+        const ed = window.tinyEditor;
+        const contentDirty = !!(ed && ed.isDirty && ed.isDirty());
+        const metaDirty =
+            ((document.getElementById('postTitle') || {}).value || '') !== _initialMeta.title ||
+            ((document.getElementById('postTags') || {}).value || '') !== _initialMeta.tags;
+        return contentDirty || metaDirty;
+    }
+
+    function openLeaveModal() {
+        const m = document.getElementById('leaveModal');
+        if (m) m.classList.add('active');
+    }
+    function closeLeaveModal() {
+        const m = document.getElementById('leaveModal');
+        if (m) m.classList.remove('active');
+        _pendingLeaveUrl = null;
+    }
+    function leaveWithoutSaving() {
+        const url = _pendingLeaveUrl || '/';
+        if (window.tinyEditor && window.tinyEditor.setDirty) window.tinyEditor.setDirty(false);
+        _pendingLeaveUrl = null;
+        window.location.href = url;
+    }
+    function saveThenLeave() {
+        const url = _pendingLeaveUrl || '/';
+        Promise.resolve(savePost()).then(function(ok) {
+            if (ok) { _pendingLeaveUrl = null; window.location.href = url; }
+            // on failure (e.g. missing title) keep the modal open so the
+            // notification is visible and the user can fix it.
+        });
+    }
+    // expose for inline onclick handlers
+    window.closeLeaveModal = closeLeaveModal;
+    window.leaveWithoutSaving = leaveWithoutSaving;
+    window.saveThenLeave = saveThenLeave;
+
+    // Intercept same-window navigation links (skip new-tab/anchor/JS links).
+    document.querySelectorAll('a[href]').forEach(function(a) {
+        if (a.target === '_blank') return;
+        const href = a.getAttribute('href');
+        if (!href || href.charAt(0) === '#' || href.indexOf('javascript:') === 0) return;
+        a.addEventListener('click', function(e) {
+            if (e.ctrlKey || e.metaKey || e.shiftKey || e.button !== 0) return; // let new-tab clicks through
+            if (editorIsDirty()) {
+                e.preventDefault();
+                _pendingLeaveUrl = a.href;
+                openLeaveModal();
+            }
+        });
+    });
+
+    // Close the leave modal on backdrop click / Escape.
+    document.addEventListener('click', function(e) {
+        if (e.target.id === 'leaveModal' && e.target.classList.contains('active')) closeLeaveModal();
+    });
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') closeLeaveModal();
     });
 </script>
 {% endblock %}
